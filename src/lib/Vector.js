@@ -9,24 +9,28 @@ export default class Vector {
     return new Vector(length * Math.cos(angle), length * Math.sin(angle))
   }
 
+  distance(other) {
+    return Math.sqrt(Math.pow(other.x - this.x, 2) + Math.pow(other.y - this.y, 2)  )
+  }
+
+  get mag () {
+    return  Math.sqrt( this.x * this.x + this.y * this.y )
+  }
   add(other) {
-    let x = this.x + other.x
-    let y = this.y + other.y
-
-    return new Vector(x, y)
+    this.x = this.x + other.x
+    this.y = this.y + other.y
   }
-
   subtract (other) {
-    let x = this.x - other.x
-    let y = this.y - other.y
-    return new Vector(x, y)
+    this.x = this.x - other.x
+    this.y = this.y - other.y
   }
-
   mult(a) {
-    return new Vector (this.x * a, this.y * a)
+    this.x = this.x * a
+    this.y = this.y * a
   }
-  mag () {
-    return  Math.sqrt( this.x * this.x + this.y + this.y )
+  setMag(mag) {
+    let currentMag = this.mag
+    this.x = this.x * mag / currentMag
+    this.y = this.y * mag / currentMag
   }
-
 }

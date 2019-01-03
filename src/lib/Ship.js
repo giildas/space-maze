@@ -2,7 +2,7 @@ import Vector from './Vector'
 
 export default class Ship {
 
-  constructor (width, height) {
+  constructor (width, height, onShoot) {
     this.windowWidth = width
     this.windowHeight = height
 
@@ -16,13 +16,16 @@ export default class Ship {
 
     this.boost = false
 
+    this.shootAllowed = true
+    this.onShoot = onShoot
+
     window.addEventListener('keydown', this.onKeyDown.bind(this))
     window.addEventListener('keyup', this.onKeyUp.bind(this))
   }
 
   update () {
-    let newPos = this.pos.add(this.vel)
-    this.pos = newPos
+    this.pos.add(this.vel)
+
     if (this.pos.x > this.windowWidth) this.pos.x = 0
     if (this.pos.x < 0) this.pos.x = this.windowWidth
     if (this.pos.y > this.windowHeight) this.pos.y = 0
@@ -31,15 +34,22 @@ export default class Ship {
 
     let newAngle = this.angle + this.shipAngleOffset
     this.angle = newAngle
-
     if (this.boost) {
-      let force = Vector.fromAngle(this.angle, 0.2)
-      let newVel = this.vel.add(force)
-      this.vel =  newVel
+      let force = Vector.fromAngle(this.angle, 0.15)
+      this.vel.add(force)
+
+      if (this.vel.mag > 5) {
+        this.vel.setMag(5)
+      }
     }
   }
 
   onKeyDown(e) {
+    if (e.keyCode === 32 && this.shootAllowed) {
+      this.onShoot(this)
+      this.shootAllowed = false
+    }
+
     // left
     if (e.keyCode === 37) this.shipAngleOffset = -0.1
     // right
@@ -51,10 +61,11 @@ export default class Ship {
   onKeyUp(e) {
     if (e.keyCode === 37 || e.keyCode === 39) this.shipAngleOffset = 0
     if (e.keyCode === 38) this.boost = false
+    if (e.keyCode === 32) this.shootAllowed = true
   }
 
   draw (ctx) {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+    ctx.fillStyle = '#000';
     ctx.strokeStyle = '#FFF';
     ctx.lineWidth = 1;
 
@@ -68,6 +79,7 @@ export default class Ship {
       ctx.lineTo(-this.w/2, -this.h/2);
     ctx.closePath();
     ctx.stroke();
+    ctx.fill();
 
     if (this.boost) {
       ctx.fillStyle = '#f4aa39';
@@ -75,8 +87,8 @@ export default class Ship {
         ctx.moveTo(-this.w/2, -this.h/4);
         ctx.lineTo(-this.w/2-10, 0);
         ctx.lineTo(-this.w/2, this.h/4);
-        ctx.closePath();
         ctx.fill();
+       ctx.closePath();
       }
     ctx.restore()
   }
