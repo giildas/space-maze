@@ -1,12 +1,11 @@
 import Vector from './Vector'
 
 export default class Ship {
-
   constructor (width, height, onShoot) {
     this.windowWidth = width
     this.windowHeight = height
 
-    this.pos = new Vector(width/2, height/2)
+    this.pos = new Vector(width / 2, height / 2)
     this.vel = new Vector(0, 0)
     this.angle = Math.PI
     this.shipAngleOffset = 0
@@ -30,21 +29,19 @@ export default class Ship {
     if (this.pos.y > this.windowHeight) this.pos.y = 0
     if (this.pos.y < 0) this.pos.y = this.windowHeight
 
-
-    let newAngle = this.angle + this.shipAngleOffset
+    const newAngle = this.angle + this.shipAngleOffset
     this.angle = newAngle
     if (this.boost) {
-      let force = Vector.fromAngle(this.angle, 0.15)
+      const force = Vector.fromAngle(this.angle, 0.15)
       this.vel.add(force)
 
       if (this.vel.mag > 5) {
         this.vel.setMag(5)
       }
     }
-
   }
 
-  onKeyDown(e) {
+  onKeyDown (e) {
     if (e.keyCode === 32 && this.shootAllowed) {
       this.onShoot(this)
       this.shootAllowed = false
@@ -58,38 +55,37 @@ export default class Ship {
     if (e.keyCode === 38) this.boost = true
   }
 
-  onKeyUp(e) {
+  onKeyUp (e) {
     if (e.keyCode === 37 || e.keyCode === 39) this.shipAngleOffset = 0
     if (e.keyCode === 38) this.boost = false
     if (e.keyCode === 32) this.shootAllowed = true
   }
 
   draw (ctx) {
-    ctx.fillStyle = '#e93aa3';
-    ctx.strokeStyle = '#FFF';
-    ctx.lineWidth = 1;
+    ctx.fillStyle = '#e93aa3'
+    ctx.strokeStyle = '#FFF'
+    ctx.lineWidth = 1
 
     ctx.save()
     ctx.translate(this.pos.x, this.pos.y)
     ctx.rotate(this.angle)
-    ctx.beginPath();
-      ctx.moveTo(-this.r, -this.r/2);
-      ctx.lineTo(this.r, 0);
-      ctx.lineTo(-this.r, this.r/2);
-      ctx.lineTo(-this.r
-        , -this.r/4);
-    ctx.closePath();
+    ctx.beginPath()
+    ctx.moveTo(-this.r, -this.r / 2)
+    ctx.lineTo(this.r, 0)
+    ctx.lineTo(-this.r, this.r / 2)
+    ctx.lineTo(-this.r, -this.r / 4)
+    ctx.closePath()
 
-    ctx.fill();
+    ctx.fill()
 
     if (this.boost) {
-      ctx.fillStyle = '#f4aa39';
-      ctx.beginPath();
-        ctx.moveTo(-this.r, -this.r/4);
-        ctx.lineTo(-this.r-this.r/1.5, 0);
-        ctx.lineTo(-this.r, this.r/4);
-        ctx.fill();
-      ctx.closePath();
+      ctx.fillStyle = '#f4aa39'
+      ctx.beginPath()
+      ctx.moveTo(-this.r, -this.r / 4)
+      ctx.lineTo(-this.r - this.r / 1.5, 0)
+      ctx.lineTo(-this.r, this.r / 4)
+      ctx.fill()
+      ctx.closePath()
     }
     ctx.restore()
 

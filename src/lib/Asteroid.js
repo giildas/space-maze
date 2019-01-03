@@ -1,8 +1,7 @@
-import Vector from "./Vector";
+import Vector from './Vector'
 
 export default class Asteroid {
-
-  constructor(w, h, x , y, r = 30, divided = false ) {
+  constructor (w, h, x, y, r = 30, divided = false) {
     this.windowWidth = w
     this.windowHeight = h
 
@@ -12,15 +11,13 @@ export default class Asteroid {
     this.pos = new Vector(x, y)
     this.r = r
 
-
     this.divided = divided
-    this.vel = Vector.fromAngle(Math.random() * Math.PI * 2, Math.random() )
-
+    this.vel = Vector.fromAngle(Math.random() * Math.PI * 2, Math.random())
 
     this.nbPoints = Math.floor(Math.random() * 10) + 5
     this.offsets = []
     for (let i = 0; i < this.nbPoints; i++) {
-      this.offsets[i] = Math.random() * r - r/2
+      this.offsets[i] = Math.random() * r - r / 2
     }
   }
 
@@ -28,7 +25,7 @@ export default class Asteroid {
     return (this.pos.distance(object.pos) < this.r + object.r)
   }
 
-  update() {
+  update () {
     this.pos.add(this.vel)
     if (this.pos.x > this.windowWidth) this.pos.x = 0
     if (this.pos.x < 0) this.pos.x = this.windowWidth
@@ -36,34 +33,27 @@ export default class Asteroid {
     if (this.pos.y < 0) this.pos.y = this.windowHeight
   }
 
-  draw(ctx) {
-    ctx.fillStyle = '#FFF';
-    ctx.lineWidth = 1;
+  draw (ctx) {
+    ctx.fillStyle = '#FFF'
+    ctx.lineWidth = 1
     ctx.save()
-      ctx.translate(this.pos.x, this.pos.y)
-      ctx.beginPath()
-      for (let i = 0; i < this.nbPoints; i++) {
-        let a = i / this.nbPoints * Math.PI * 2
-        let r = this.r + this.offsets[i]
-        let x = r * Math.cos(a)
-        let y = r * Math.sin(a)
+    ctx.translate(this.pos.x, this.pos.y)
+    ctx.beginPath()
+    for (let i = 0; i < this.nbPoints; i++) {
+      const a = i / this.nbPoints * Math.PI * 2
+      const r = this.r + this.offsets[i]
+      const x = r * Math.cos(a)
+      const y = r * Math.sin(a)
 
-        if (i === 0) {
-          ctx.moveTo(x, y)
-        } else {
-          ctx.lineTo(x, y)
-        }
+      if (i === 0) {
+        ctx.moveTo(x, y)
+      } else {
+        ctx.lineTo(x, y)
       }
+    }
 
-
-      // ctx.ellipse(0, 0, this.r, this.r, 0, 0, Math.PI * 2)
-      ctx.closePath();
-      ctx.fill();
+    ctx.closePath()
+    ctx.fill()
     ctx.restore()
   }
-
-
-
-
-
 }

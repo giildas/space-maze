@@ -10,7 +10,7 @@ export default class Laser {
     this.r = 10
   }
 
-  get outOfScreen() {
+  get outOfScreen () {
     return (
       this.pos.x > this.windowWidth ||
       this.pos.x < 0 ||
@@ -19,22 +19,21 @@ export default class Laser {
     )
   }
 
-  update() {
+  update () {
     this.pos.add(this.vel)
   }
 
   draw (ctx) {
-    ctx.strokeStyle = '#FFF';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#FFF'
+    ctx.lineWidth = 2
     ctx.save()
     ctx.translate(this.pos.x, this.pos.y)
     ctx.rotate(this.angle)
-      ctx.beginPath();
-        ctx.moveTo(-this.r/2, 0);
-        ctx.lineTo(this.r/2, 0);
-      ctx.closePath();
-    ctx.stroke();
+    ctx.beginPath()
+    ctx.moveTo(-this.r / 2, 0)
+    ctx.lineTo(this.r / 2, 0)
+    ctx.closePath()
+    ctx.stroke()
     ctx.restore()
   }
-
 }
