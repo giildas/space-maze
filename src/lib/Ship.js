@@ -14,6 +14,8 @@ export default class Ship {
     this.w = 30
     this.h = 15
 
+    this.boost = false
+
     window.addEventListener('keydown', this.onKeyDown.bind(this))
     window.addEventListener('keyup', this.onKeyUp.bind(this))
   }
@@ -29,6 +31,12 @@ export default class Ship {
 
     let newAngle = this.angle + this.shipAngleOffset
     this.angle = newAngle
+
+    if (this.boost) {
+      let force = Vector.fromAngle(this.angle, 0.2)
+      let newVel = this.vel.add(force)
+      this.vel =  newVel
+    }
   }
 
   onKeyDown(e) {
@@ -37,14 +45,39 @@ export default class Ship {
     // right
     if (e.keyCode === 39) this.shipAngleOffset = 0.1
     // up
-    if (e.keyCode === 38) {
-      let force = Vector.fromAngle(this.angle)
-      let newVel = this.vel.add(force)
-      this.vel =  newVel
-    }
+    if (e.keyCode === 38) this.boost = true
   }
 
   onKeyUp(e) {
-    this.shipAngleOffset = 0
+    if (e.keyCode === 37 || e.keyCode === 39) this.shipAngleOffset = 0
+    if (e.keyCode === 38) this.boost = false
+  }
+
+  draw (ctx) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+    ctx.strokeStyle = '#FFF';
+    ctx.lineWidth = 1;
+
+    ctx.save()
+    ctx.translate(this.pos.x, this.pos.y)
+    ctx.rotate(this.angle)
+    ctx.beginPath();
+      ctx.moveTo(-this.w/2, -this.h/2);
+      ctx.lineTo(this.w/2, 0);
+      ctx.lineTo(-this.w/2, this.h/2);
+      ctx.lineTo(-this.w/2, -this.h/2);
+    ctx.closePath();
+    ctx.stroke();
+
+    if (this.boost) {
+      ctx.fillStyle = '#f4aa39';
+      ctx.beginPath();
+        ctx.moveTo(-this.w/2, -this.h/4);
+        ctx.lineTo(-this.w/2-10, 0);
+        ctx.lineTo(-this.w/2, this.h/4);
+        ctx.closePath();
+        ctx.fill();
+      }
+    ctx.restore()
   }
 }
