@@ -1,3 +1,13 @@
+// TODO
+// asteroid don't spawn on ship's position
+// clean edges teleportation
+// cleaner collision detection ship/asteroid
+// score
+// levels
+// game over message
+// nice colors
+// particles burst on explosion
+
 import Ship from './lib/Ship'
 import './app.css'
 import Laser from './lib/Laser';
@@ -9,25 +19,29 @@ let ctx = canvas.getContext('2d')
 let w = 600
 let h = 300
 
-let gameFinished = false
 
 canvas.width = w
 canvas.height = h
+let gameFinished;
+newGame()
+function newGame () {
+  let lasers = []
+  let asteroids = []
+  gameFinished = false
 
-let lasers = []
-let asteroids = []
+  let ship = new Ship(w, h, (s) => {
+    lasers.push(new Laser(w, h, s.pos.x, s.pos.y, s.angle))
+  })
 
-let ship = new Ship(w, h, (s) => {
-  lasers.push(new Laser(w, h, s.pos.x, s.pos.y, s.angle))
-})
+  for (let i = 0; i < 2; i++) {
+    asteroids.push(new Asteroid(w, h))
+  }
 
-for (let i = 0; i < 3; i++) {
-  asteroids.push(new Asteroid(w, h))
+  gameLoop(ship, asteroids, lasers)
 }
 
-gameLoop()
 
-function gameLoop () {
+function gameLoop (ship, asteroids, lasers) {
   ctx.fillStyle = '#111';
   ctx.fillRect(0, 0, w, h)
 
@@ -48,35 +62,40 @@ function gameLoop () {
     asteroid.update()
     asteroid.draw(ctx)
 
+    if (asteroid.hits(ship)) {
+      gameFinished = true
+    }
+
     for (let j = lasers.length - 1; j >= 0 ; j--) {
       const laser = lasers[j];
 
-      if (laser.hits(asteroid)) {
-        // remove asteroid
+      if (asteroid.hits(laser)) {
         asteroids.splice(i, 1)
-        // remove laser
         lasers.splice(j, 1)
-
-        // create 4 asteroids
         if (!asteroid.divided) {
           for(let k = 0; k < 4; k++) {
             asteroids.push(new Asteroid(w, h, asteroid.pos.x, asteroid.pos.y, 8, true))
           }
         }
-
       }
+
     }
 
   }
+
   ship.draw(ctx)
 
   if (asteroids.length == 0) {
     gameFinished = true
   }
 
-
-
-  requestAnimationFrame(gameLoop)
+  if (!gameFinished) {
+    requestAnimationFrame(() => {
+      gameLoop(ship, asteroids, lasers)
+    })
+  } else {
+    newGame()
+  }
 
 }
 
