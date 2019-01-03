@@ -10,26 +10,27 @@
 
 import Ship from './lib/Ship'
 import './app.css'
-import Laser from './lib/Laser';
-import Asteroid from './lib/Asteroid';
+import Laser from './lib/Laser'
+import Asteroid from './lib/Asteroid'
 
-let canvas = document.getElementById('canvas')
-let ctx = canvas.getContext('2d')
+const canvas = document.getElementById('canvas')
+const ctx = canvas.getContext('2d')
 
-let w = 600
-let h = 300
+const $level = document.getElementById('level')
 
+const w = 600
+const h = 300
 
 canvas.width = w
 canvas.height = h
-let gameFinished;
-newGame()
-function newGame () {
-  let lasers = []
-  let asteroids = []
-  gameFinished = false
 
-  let ship = new Ship(w, h, (s) => {
+newGame(0)
+
+function newGame (level) {
+  const lasers = []
+  const asteroids = []
+
+  const ship = new Ship(w, h, (s) => {
     lasers.push(new Laser(w, h, s.pos.x, s.pos.y, s.angle))
   })
 
@@ -37,18 +38,19 @@ function newGame () {
     asteroids.push(new Asteroid(w, h))
   }
 
-  gameLoop(ship, asteroids, lasers)
+  $level.innerHTML = '<b>Level: </b> ' + level
+
+  gameLoop(ship, asteroids, lasers, level)
 }
 
-
-function gameLoop (ship, asteroids, lasers) {
-  ctx.fillStyle = '#111';
+function gameLoop (ship, asteroids, lasers, level) {
+  ctx.fillStyle = '#111'
   ctx.fillRect(0, 0, w, h)
 
   ship.update()
 
-  for (let i = lasers.length - 1; i >= 0 ; i--) {
-    const laser = lasers[i];
+  for (let i = lasers.length - 1; i >= 0; i--) {
+    const laser = lasers[i]
     laser.update()
     laser.draw(ctx)
 
@@ -57,46 +59,37 @@ function gameLoop (ship, asteroids, lasers) {
     }
   }
 
-  for (let i = asteroids.length - 1; i >= 0 ; i--) {
-    const asteroid = asteroids[i];
+  for (let i = asteroids.length - 1; i >= 0; i--) {
+    const asteroid = asteroids[i]
     asteroid.update()
     asteroid.draw(ctx)
 
-    if (asteroid.hits(ship)) {
-      gameFinished = true
-    }
-
-    for (let j = lasers.length - 1; j >= 0 ; j--) {
-      const laser = lasers[j];
+    for (let j = lasers.length - 1; j >= 0; j--) {
+      const laser = lasers[j]
 
       if (asteroid.hits(laser)) {
         asteroids.splice(i, 1)
         lasers.splice(j, 1)
         if (!asteroid.divided) {
-          for(let k = 0; k < 4; k++) {
+          for (let k = 0; k < 4; k++) {
             asteroids.push(new Asteroid(w, h, asteroid.pos.x, asteroid.pos.y, 8, true))
           }
         }
       }
-
     }
 
+    if (asteroid.hits(ship)) {
+      // console.log('hit')
+      newGame(0)
+    }
   }
 
   ship.draw(ctx)
-
-  if (asteroids.length == 0) {
-    gameFinished = true
+  if (asteroids.length === 0) {
+    newGame(level + 1)
   }
 
-  if (!gameFinished) {
-    requestAnimationFrame(() => {
-      gameLoop(ship, asteroids, lasers)
-    })
-  } else {
-    newGame()
-  }
-
+  requestAnimationFrame(() => {
+    gameLoop(ship, asteroids, lasers)
+  })
 }
-
-
