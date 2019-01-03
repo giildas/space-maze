@@ -15,8 +15,18 @@ export default class Asteroid {
 
     this.divided = divided
     this.vel = Vector.fromAngle(Math.random() * Math.PI * 2, Math.random() )
+
+
+    this.nbPoints = Math.floor(Math.random() * 10) + 5
+    this.offsets = []
+    for (let i = 0; i < this.nbPoints; i++) {
+      this.offsets[i] = Math.random() * r - r/2
+    }
   }
 
+  hits (object) {
+    return (this.pos.distance(object.pos) < this.r + object.r)
+  }
 
   update() {
     this.pos.add(this.vel)
@@ -27,14 +37,28 @@ export default class Asteroid {
   }
 
   draw(ctx) {
-    ctx.strokeStyle = '#FFF';
+    ctx.fillStyle = '#FFF';
     ctx.lineWidth = 1;
     ctx.save()
       ctx.translate(this.pos.x, this.pos.y)
       ctx.beginPath()
-      ctx.ellipse(0, 0, this.r, this.r, 0, 0, Math.PI * 2)
+      for (let i = 0; i < this.nbPoints; i++) {
+        let a = i / this.nbPoints * Math.PI * 2
+        let r = this.r + this.offsets[i]
+        let x = r * Math.cos(a)
+        let y = r * Math.sin(a)
+
+        if (i === 0) {
+          ctx.moveTo(x, y)
+        } else {
+          ctx.lineTo(x, y)
+        }
+      }
+
+
+      // ctx.ellipse(0, 0, this.r, this.r, 0, 0, Math.PI * 2)
       ctx.closePath();
-      ctx.stroke();
+      ctx.fill();
     ctx.restore()
   }
 

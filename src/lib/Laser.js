@@ -4,10 +4,10 @@ export default class Laser {
   constructor (width, height, x, y, angle) {
     this.windowWidth = width
     this.windowHeight = height
-
     this.pos = new Vector(x, y)
     this.angle = angle
     this.vel = Vector.fromAngle(angle, 10)
+    this.r = 10
   }
 
   get outOfScreen() {
@@ -17,10 +17,6 @@ export default class Laser {
       this.pos.y > this.windowHeight ||
       this.pos.y < 0
     )
-  }
-
-  hits (asteroid) {
-    return (this.pos.distance(asteroid.pos) < asteroid.r)
   }
 
   update() {
@@ -34,8 +30,8 @@ export default class Laser {
     ctx.translate(this.pos.x, this.pos.y)
     ctx.rotate(this.angle)
       ctx.beginPath();
-        ctx.moveTo(-5, 0);
-        ctx.lineTo(5, 0);
+        ctx.moveTo(-this.r/2, 0);
+        ctx.lineTo(this.r/2, 0);
       ctx.closePath();
     ctx.stroke();
     ctx.restore()

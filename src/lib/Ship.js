@@ -11,8 +11,7 @@ export default class Ship {
     this.angle = Math.PI
     this.shipAngleOffset = 0
 
-    this.w = 30
-    this.h = 15
+    this.r = 15
 
     this.boost = false
 
@@ -42,6 +41,7 @@ export default class Ship {
         this.vel.setMag(5)
       }
     }
+
   }
 
   onKeyDown(e) {
@@ -65,7 +65,7 @@ export default class Ship {
   }
 
   draw (ctx) {
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = '#e93aa3';
     ctx.strokeStyle = '#FFF';
     ctx.lineWidth = 1;
 
@@ -73,23 +73,26 @@ export default class Ship {
     ctx.translate(this.pos.x, this.pos.y)
     ctx.rotate(this.angle)
     ctx.beginPath();
-      ctx.moveTo(-this.w/2, -this.h/2);
-      ctx.lineTo(this.w/2, 0);
-      ctx.lineTo(-this.w/2, this.h/2);
-      ctx.lineTo(-this.w/2, -this.h/2);
+      ctx.moveTo(-this.r, -this.r/2);
+      ctx.lineTo(this.r, 0);
+      ctx.lineTo(-this.r, this.r/2);
+      ctx.lineTo(-this.r
+        , -this.r/4);
     ctx.closePath();
-    ctx.stroke();
+
     ctx.fill();
 
     if (this.boost) {
       ctx.fillStyle = '#f4aa39';
       ctx.beginPath();
-        ctx.moveTo(-this.w/2, -this.h/4);
-        ctx.lineTo(-this.w/2-10, 0);
-        ctx.lineTo(-this.w/2, this.h/4);
+        ctx.moveTo(-this.r, -this.r/4);
+        ctx.lineTo(-this.r-this.r/1.5, 0);
+        ctx.lineTo(-this.r, this.r/4);
         ctx.fill();
-       ctx.closePath();
-      }
+      ctx.closePath();
+    }
+    ctx.restore()
+
     ctx.restore()
   }
 }
