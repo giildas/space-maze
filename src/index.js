@@ -3,9 +3,6 @@
 // clean edges teleportation
 // cleaner collision detection ship/asteroid
 // score
-// levels
-// game over message
-// nice colors
 // particles burst on explosion
 
 import Ship from './lib/Ship'
@@ -24,9 +21,10 @@ const h = 300
 canvas.width = w
 canvas.height = h
 
-newGame(0)
+let level = 1
+newGame()
 
-function newGame (level) {
+function newGame () {
   const lasers = []
   const asteroids = []
 
@@ -34,16 +32,27 @@ function newGame (level) {
     lasers.push(new Laser(w, h, s.pos.x, s.pos.y, s.angle))
   })
 
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < level; i++) {
     asteroids.push(new Asteroid(w, h))
   }
-
   $level.innerHTML = '<b>Level: </b> ' + level
-
-  gameLoop(ship, asteroids, lasers, level)
+  gameLoop(ship, asteroids, lasers)
 }
 
-function gameLoop (ship, asteroids, lasers, level) {
+function nextGame (e) {
+  if (e.keyCode === 32) {
+    window.removeEventListener('keydown', nextGame)
+    newGame()
+  }
+}
+function restartGame (e) {
+  if (e.keyCode === 32) {
+    window.removeEventListener('keydown', nextGame)
+    newGame()
+  }
+}
+
+function gameLoop (ship, asteroids, lasers) {
   ctx.fillStyle = '#111'
   ctx.fillRect(0, 0, w, h)
 
@@ -71,22 +80,39 @@ function gameLoop (ship, asteroids, lasers, level) {
         asteroids.splice(i, 1)
         lasers.splice(j, 1)
         if (!asteroid.divided) {
-          for (let k = 0; k < 4; k++) {
+          for (let k = 0; k < 2; k++) {
             asteroids.push(new Asteroid(w, h, asteroid.pos.x, asteroid.pos.y, 8, true))
           }
         }
       }
     }
+    ship.draw(ctx)
 
     if (asteroid.hits(ship)) {
-      // console.log('hit')
-      newGame(0)
+      ctx.font = '48px serif'
+      ctx.fillStyle = '#FFF'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('Game over', w / 2, h / 2)
+      ctx.font = '16px serif'
+      ctx.fillText('Press \'space\' to restart', w / 2, h / 2 + 36)
+      level = 1
+      window.addEventListener('keydown', nextGame)
+      return
     }
   }
 
-  ship.draw(ctx)
   if (asteroids.length === 0) {
-    newGame(level + 1)
+    ctx.font = '48px serif'
+    ctx.fillStyle = '#FFF'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('Congratulations ! ', w / 2, h / 2)
+    ctx.font = '16px serif'
+    level = level + 1
+    ctx.fillText('Press \'space\' to continue to level ' + level, w / 2, h / 2 + 36)
+    window.addEventListener('keydown', nextGame)
+    return
   }
 
   requestAnimationFrame(() => {
