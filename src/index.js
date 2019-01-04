@@ -1,6 +1,5 @@
 // TODO
 // asteroid don't spawn on ship's position
-// clean edges teleportation
 // cleaner collision detection ship/asteroid
 // score
 // particles burst on explosion
@@ -21,6 +20,11 @@ const h = 300
 canvas.width = w
 canvas.height = h
 
+window.options = {
+  collisions: true,
+  collisionsDebugCircle: false
+}
+
 let level = 1
 newGame()
 
@@ -32,7 +36,7 @@ function newGame () {
     lasers.push(new Laser(w, h, s.pos.x, s.pos.y, s.angle))
   })
 
-  for (let i = 0; i < level; i++) {
+  for (let i = 0; i < level * 2; i++) {
     asteroids.push(new Asteroid(w, h))
   }
   $level.innerHTML = '<b>Level: </b> ' + level
@@ -40,14 +44,8 @@ function newGame () {
 }
 
 function nextGame (e) {
-  if (e.keyCode === 32) {
-    window.removeEventListener('keydown', nextGame)
-    newGame()
-  }
-}
-function restartGame (e) {
-  if (e.keyCode === 32) {
-    window.removeEventListener('keydown', nextGame)
+  if (e.keyCode === 13) {
+    window.removeEventListener('keydown', nextGame, true)
     newGame()
   }
 }
@@ -88,16 +86,16 @@ function gameLoop (ship, asteroids, lasers) {
     }
     ship.draw(ctx)
 
-    if (asteroid.hits(ship)) {
+    if (options.collisions && asteroid.hits(ship)) {
       ctx.font = '48px serif'
       ctx.fillStyle = '#FFF'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText('Game over', w / 2, h / 2)
       ctx.font = '16px serif'
-      ctx.fillText('Press \'space\' to restart', w / 2, h / 2 + 36)
+      ctx.fillText('Press \'enter\' to restart', w / 2, h / 2 + 36)
       level = 1
-      window.addEventListener('keydown', nextGame)
+      window.addEventListener('keydown', nextGame, true)
       return
     }
   }
@@ -110,8 +108,8 @@ function gameLoop (ship, asteroids, lasers) {
     ctx.fillText('Congratulations ! ', w / 2, h / 2)
     ctx.font = '16px serif'
     level = level + 1
-    ctx.fillText('Press \'space\' to continue to level ' + level, w / 2, h / 2 + 36)
-    window.addEventListener('keydown', nextGame)
+    ctx.fillText('Press \'enter\' to continue to level ' + level, w / 2, h / 2 + 36)
+    window.addEventListener('keydown', nextGame, true)
     return
   }
 
