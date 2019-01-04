@@ -1,6 +1,4 @@
 // TODO
-// asteroid don't spawn on ship's position
-// cleaner collision detection ship/asteroid
 // score
 // particles burst on explosion
 

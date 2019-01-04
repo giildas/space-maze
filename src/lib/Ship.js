@@ -11,6 +11,8 @@ export default class Ship {
     this.shipAngleOffset = 0
 
     this.r = 15
+    // we will draw the ship a bit bigger so collision seem more ok
+    this.drawR = this.r * 1.3
 
     this.boost = false
 
@@ -24,10 +26,10 @@ export default class Ship {
   update () {
     this.pos.add(this.vel)
 
-    if (this.pos.x > this.windowWidth) this.pos.x = 0
-    if (this.pos.x < 0) this.pos.x = this.windowWidth
-    if (this.pos.y > this.windowHeight) this.pos.y = 0
-    if (this.pos.y < 0) this.pos.y = this.windowHeight
+    if (this.pos.x > this.windowWidth + this.r) this.pos.x = -this.r
+    if (this.pos.x < -this.r) this.pos.x = this.windowWidth + this.r
+    if (this.pos.y > this.windowHeight + this.r) this.pos.y = -this.r
+    if (this.pos.y < -this.r) this.pos.y = this.windowHeight + this.r
 
     const newAngle = this.angle + this.shipAngleOffset
     this.angle = newAngle
@@ -46,12 +48,8 @@ export default class Ship {
       this.onShoot(this)
       this.shootAllowed = false
     }
-
-    // left
     if (e.keyCode === 37) this.shipAngleOffset = -0.1
-    // right
     if (e.keyCode === 39) this.shipAngleOffset = 0.1
-    // up
     if (e.keyCode === 38) this.boost = true
   }
 
@@ -62,33 +60,47 @@ export default class Ship {
   }
 
   draw (ctx) {
-    ctx.fillStyle = '#e93aa3'
+    this._drawShip(ctx, this.pos.x, this.pos.y)
+
+    if (this.boost) {
+      this._drawTriangle(ctx, this.pos.x, this.pos.y, 1, '#ff860d')
+      this._drawTriangle(ctx, this.pos.x, this.pos.y, 0.4, '#FFF')
+    }
+  }
+
+  _drawShip (ctx, x, y) {
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.fillStyle = '#c89bc5'
     ctx.strokeStyle = '#FFF'
     ctx.lineWidth = 1
 
-    ctx.save()
-    ctx.translate(this.pos.x, this.pos.y)
     ctx.rotate(this.angle)
     ctx.beginPath()
-    ctx.moveTo(-this.r, -this.r / 2)
-    ctx.lineTo(this.r, 0)
-    ctx.lineTo(-this.r, this.r / 2)
-    ctx.lineTo(-this.r, -this.r / 4)
+    ctx.moveTo(-this.drawR, -this.drawR / 2)
+    ctx.lineTo(this.drawR, 0)
+    ctx.lineTo(-this.drawR, this.drawR / 2)
+    ctx.lineTo(-this.drawR, -this.drawR / 4)
     ctx.closePath()
-
     ctx.fill()
-
-    if (this.boost) {
-      ctx.fillStyle = '#f4aa39'
-      ctx.beginPath()
-      ctx.moveTo(-this.r, -this.r / 4)
-      ctx.lineTo(-this.r - this.r / 1.5, 0)
-      ctx.lineTo(-this.r, this.r / 4)
-      ctx.fill()
-      ctx.closePath()
+    if (window.options.collisionsDebugCircle) {
+      ctx.ellipse(0, 0, this.r, this.r, 0, 0, Math.PI * 2)
+      ctx.stroke()
     }
     ctx.restore()
+  }
 
+  _drawTriangle (ctx, x, y, scale, color) {
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.rotate(this.angle)
+    ctx.fillStyle = color
+    ctx.beginPath()
+    ctx.moveTo(-this.drawR, -this.drawR / 4 * scale)
+    ctx.lineTo(-this.drawR - this.drawR / 1.5 * scale, 0)
+    ctx.lineTo(-this.drawR, this.drawR / 4 * scale)
+    ctx.closePath()
+    ctx.fill()
     ctx.restore()
   }
 }
