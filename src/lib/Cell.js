@@ -1,11 +1,13 @@
 export default class Cell {
-  constructor (i, j, cellW, cellH) {
+  constructor (i, j, cellW, cellH, index) {
     this.i = i
     this.j = j
     this.cellW = cellW
     this.cellH = cellH
     // this.size = size
     this.wallWidth = 1
+
+    this.index = index
 
     this.walls = {
       n: true,
@@ -14,6 +16,23 @@ export default class Cell {
       w: true
     }
     this.visited = false
+  }
+
+  collides (ship) {
+    const { x, y } = ship.pos
+    const r = ship.r
+    const cellX = this.i * this.cellW
+    const cellY = this.j * this.cellH
+
+    const shipInCell = (x + r > cellX && x - r < cellX + this.cellW) && (y + r > cellY && y - r < cellY + this.cellH)
+    if (!shipInCell) return false
+
+    return (
+      (this.walls.e && x + r > cellX + this.cellW) ||
+      (this.walls.w && x - r < cellX) ||
+      (this.walls.s && y + r > cellY + this.cellH) ||
+      (this.walls.n && y - r < cellY)
+    )
   }
 
   draw (ctx) {
@@ -35,6 +54,8 @@ export default class Cell {
     if (this.walls.w) {
       this._drawWall(ctx, x, y + this.cellH, x, y)
     }
+    // ctx.fillStyle = '#FFF'
+    // ctx.fillText(this.index, x + this.cellW / 2, y + this.cellH / 2)
 
     // if (this.visited) {
     //   ctx.fillStyle = 'rgba(255, 0, 255, 100)'

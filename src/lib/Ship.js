@@ -1,19 +1,18 @@
 import Vector from './Vector'
 
 export default class Ship {
-  constructor (width, height, x, y, onShoot) {
+  constructor (width, height, x, y, radius, onShoot) {
     this.windowWidth = width
     this.windowHeight = height
     this.r = 10
 
+    this.initialPos = new Vector(x, y)
     this.pos = new Vector(x, y)
     this.vel = new Vector(0, 0)
     this.angle = 0
     this.shipAngleOffset = 0
 
     // we will draw the ship a bit bigger so collision seem more ok
-    this.drawR = this.r * 1.3
-
     this.boost = false
 
     this.shootAllowed = true
@@ -21,6 +20,16 @@ export default class Ship {
 
     window.addEventListener('keydown', this.onKeyDown.bind(this))
     window.addEventListener('keyup', this.onKeyUp.bind(this))
+  }
+
+  resetPos () {
+    this.pos = new Vector(this.initialPos.x, this.initialPos.y)
+    this.vel = new Vector(0, 0)
+    this.angle = 0
+    this.shipAngleOffset = 0
+
+    // we will draw the ship a bit bigger so collision seem more ok
+    this.boost = false
   }
 
   update () {

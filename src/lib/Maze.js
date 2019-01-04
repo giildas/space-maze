@@ -1,18 +1,26 @@
 import Cell from './Cell.js'
+import Vector from './Vector.js'
 
 export default class Maze {
   constructor (cols, rows, cellW, cellH) {
     this.cols = cols
     this.rows = rows
+    this.cellW = cellW
+    this.cellH = cellH
 
     this.grid = []
     this.stack = []
 
+    this.longestStack = 0
+    this.furthestCellCoords = null
+
     // on remplit la grille
+    let index = 0
     for (var j = 0; j < rows; j++) {
       for (var i = 0; i < cols; i++) {
-        var cell = new Cell(i, j, cellW, cellH)
+        var cell = new Cell(i, j, cellW, cellH, index)
         this.grid.push(cell)
+        index++
       }
     }
 
@@ -21,8 +29,9 @@ export default class Maze {
     // generation du labyrinthe
     let mazeDone = false
     while (!mazeDone) {
-      mazeDone = this.update()
+      mazeDone = this.nextBuildStep()
     }
+    console.log('this.furthestCellCoords', this.furthestCellCoords)
   }
 
   checkNeighbors () {
@@ -81,7 +90,7 @@ export default class Maze {
     }
   }
 
-  update () {
+  nextBuildStep () {
     this.current.visited = true
 
     // STEP 1
@@ -96,16 +105,39 @@ export default class Maze {
       // STEP 4
       this.current = next
     } else if (this.stack.length > 0) {
+      if (this.stack.length > this.longestStack) {
+        this.longestStack = this.stack.length
+        this.furthestCellCoords = { i: this.current.i, j: this.current.j }
+      }
       this.current = this.stack.pop()
     }
 
     return this.stack.length === 0
   }
 
+  collides (ship) {
+    for (let i = 0; i < this.grid.length; i++) {
+      const collision = this.grid[i].collides(ship)
+      if (collision) {
+        return i
+      }
+    }
+    return false
+  }
+
   draw (ctx) {
     for (let i = 0; i < this.grid.length; i++) {
       this.grid[i].draw(ctx)
     }
+
+    ctx.save()
+    ctx.fillStyle = '#F00'
+    ctx.beginPath()
+    ctx.translate(this.furthestCellCoords.i * this.cellW, this.furthestCellCoords.j * this.cellH)
+    ctx.ellipse(this.cellW / 2, this.cellH / 2, 10, 10, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.closePath()
+    ctx.restore()
   }
 }
 
