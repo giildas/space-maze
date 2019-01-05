@@ -3,8 +3,8 @@
 // better design for portal
 // animation when ship goes into portal
 // animation when ship explodes
-// life system (3 lives before die ?)
-// ==> bounce off walls
+// better difficulty system between levels
+// power gauge
 
 import Ship from './lib/Ship'
 import Maze from './lib/Maze'
@@ -26,22 +26,27 @@ window.options = {
   collisionsDebugCircle: false
 }
 let level = 1
+// const levelSelect = document.getElementById('level')
+// levelSelect.addEventListener('change', () => {
+//   level = levelSelect.value
+//   newGame()
+// })
 newGame()
-// 1 : 80
-// 2 : 75
-// 3 : 70
+
+function getCellSize (level) {
+  return 120 - ((level) * 10)
+}
+
 function newGame () {
-  let cellW = 80 - ((level - 1) * 5) // ideally
+  let cellW = getCellSize(level)
+
   const cols = Math.floor(w / cellW)
   cellW = w / cols // we change cellW so it's ok with canvas w
   const rows = Math.floor(h / cellW)
   const cellH = h / rows
   const maze = new Maze(cols, rows, cellW, cellH)
 
-  console.log('LEVEL', level, cellW)
-  const ship = new Ship(w, h, cellW / 2, cellH / 2, cellW / 4, (s) => {
-    console.log('space pressed')
-  })
+  const ship = new Ship(cellW / 2, cellH / 2)
 
   const portalX = maze.furthestCellCoords.i * cellW + cellW / 2
   const portalY = maze.furthestCellCoords.j * cellH + cellH / 2
@@ -50,39 +55,35 @@ function newGame () {
   gameLoop(ship, maze, portal)
 }
 
-// function nextGame (e) {
-//   if (e.keyCode === 13) {
-//     window.removeEventListener('keydown', nextGame, true)
-//     newGame()
-//   }
-// }
-
 function gameLoop (ship, maze, portal) {
   ctx.fillStyle = '#111'
   ctx.fillRect(0, 0, w, h)
 
   ctx.fillStyle = '#FFF'
-  ctx.fillText('Level ' + level, 10, 10)
+  const text = `Level ${level} - Cell: ${maze.cellW} x ${maze.cellH} - Ship: ${ship.pos.x}|${ship.pos.y}`
+  ctx.fillText(text, 10, 10)
 
   ship.update()
-  maze.draw(ctx)
-
-  portal.draw(ctx)
-  ship.draw(ctx)
-
   const coll = maze.collides(ship)
+
+  maze.draw(ctx)
+  portal.draw(ctx)
+
+  ship.draw(ctx)
   if (coll !== false) {
-    ship.resetPos()
-    // level = 1
-    // newGame()
-    // return
+    ship.explode()
+    setTimeout(() => {
+      ship.resetPos()
+    }, 1000)
   }
 
   const arrived = portal.collides(ship)
   if (arrived) {
     level += 1
     newGame()
-    return
+    // setTimeout(() => {
+    //   return
+    // }, 3000)
   }
 
   requestAnimationFrame(() => {

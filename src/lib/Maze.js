@@ -1,5 +1,4 @@
 import Cell from './Cell.js'
-import Vector from './Vector.js'
 
 export default class Maze {
   constructor (cols, rows, cellW, cellH) {
@@ -14,7 +13,6 @@ export default class Maze {
     this.longestStack = 0
     this.furthestCellCoords = null
 
-    // on remplit la grille
     let index = 0
     for (var j = 0; j < rows; j++) {
       for (var i = 0; i < cols; i++) {
@@ -24,14 +22,11 @@ export default class Maze {
       }
     }
 
-    // première cellule
     this.current = this.grid[0]
-    // generation du labyrinthe
     let mazeDone = false
     while (!mazeDone) {
       mazeDone = this.nextBuildStep()
     }
-    console.log('this.furthestCellCoords', this.furthestCellCoords)
   }
 
   checkNeighbors () {
@@ -119,7 +114,7 @@ export default class Maze {
     for (let i = 0; i < this.grid.length; i++) {
       const collision = this.grid[i].collides(ship)
       if (collision) {
-        return i
+        return true
       }
     }
     return false
