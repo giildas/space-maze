@@ -37,36 +37,38 @@ export default class Ship {
   }
 
   resetPos () {
+    if (!this.explosion) return // no reset of the ship while it's not exploding
+
+    this.explosion = null
     this.pos = new Vector(this.initialPos.x, this.initialPos.y)
     this.vel = new Vector(0, 0)
     this.angle = 0
     this.shipAngleOffset = 0
 
     this.boost = false
-
-    this.explosion = null
   }
 
   update () {
-    if (!this.explosion) {
-      this.pos.add(this.vel)
-    }
+    if (this.explosion) return
 
+    this.pos.add(this.vel)
     const newAngle = this.angle + this.shipAngleOffset
     this.angle = newAngle
     if (this.boost) {
       const force = Vector.fromAngle(this.angle, this.boostPower)
       this.vel.add(force)
 
-      if (this.vel.mag > 2) {
-        this.vel.setMag(2)
+      if (this.vel.mag > 3) {
+        this.vel.setMag(3)
       }
     }
   }
 
   explode () {
     if (!this.explosion) {
-      this.explosion = new Explosion(this.pos.x, this.pos.y)
+      const movmentDir = this.vel.angle
+      const speed = this.vel.mag
+      this.explosion = new Explosion(this.pos.x, this.pos.y, movmentDir, speed)
     }
   }
 

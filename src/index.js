@@ -2,9 +2,10 @@
 // better collision on 'lone walls'
 // better design for portal
 // animation when ship goes into portal
-// animation when ship explodes
 // better difficulty system between levels
-// power gauge
+// power gauge ??
+// cellW : by number of cells in a row
+// ==> ship radius relative to width as well
 
 import Ship from './lib/Ship'
 import Maze from './lib/Maze'
@@ -41,12 +42,13 @@ function newGame () {
   let cellW = getCellSize(level)
 
   const cols = Math.floor(w / cellW)
-  cellW = w / cols // we change cellW so it's ok with canvas w
+  cellW = w / cols // we change slightly cellW so it's a multiple of canvas w
   const rows = Math.floor(h / cellW)
-  const cellH = h / rows
+  const cellH = h / rows // the same for cellH
+
   const maze = new Maze(cols, rows, cellW, cellH)
 
-  const ship = new Ship(cellW / 2, cellH / 2)
+  const ship = new Ship(cellW / 2, cellH / 2) // starts at top left
 
   const portalX = maze.furthestCellCoords.i * cellW + cellW / 2
   const portalY = maze.furthestCellCoords.j * cellH + cellH / 2
@@ -60,8 +62,9 @@ function gameLoop (ship, maze, portal) {
   ctx.fillRect(0, 0, w, h)
 
   ctx.fillStyle = '#FFF'
-  const text = `Level ${level} - Cell: ${maze.cellW} x ${maze.cellH} - Ship: ${ship.pos.x}|${ship.pos.y}`
-  ctx.fillText(text, 10, 10)
+  ctx.font = '13px serif'
+  const text = `Level ${level}` // - Cell: ${maze.cellW} x ${maze.cellH}`
+  ctx.fillText(text, 10, 15)
 
   ship.update()
   const coll = maze.collides(ship)
@@ -70,17 +73,20 @@ function gameLoop (ship, maze, portal) {
   portal.draw(ctx)
 
   ship.draw(ctx)
+
+  // collision with walls
   if (coll !== false) {
     ship.explode()
     setTimeout(() => {
       ship.resetPos()
-    }, 1000)
+    }, 500)
   }
 
   const arrived = portal.collides(ship)
   if (arrived) {
     level += 1
     newGame()
+    return
     // setTimeout(() => {
     //   return
     // }, 3000)

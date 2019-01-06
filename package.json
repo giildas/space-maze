@@ -1,5 +1,5 @@
 {
-  "name": "es6-boilerplate",
+  "name": "mazesteroid",
   "version": "2.0.0",
   "description": "Standard ES6 Boilerplate configured with babel, webpack and eslint.",
   "main": "index.js",

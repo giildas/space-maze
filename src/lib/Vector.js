@@ -8,13 +8,17 @@ export default class Vector {
     return new Vector(length * Math.cos(angle), length * Math.sin(angle))
   }
 
+  get mag () {
+    return Math.sqrt(this.x * this.x + this.y * this.y)
+  }
+  get angle () {
+    return Math.atan(this.y / this.x)
+  }
+
   distance (other) {
     return Math.sqrt(Math.pow(other.x - this.x, 2) + Math.pow(other.y - this.y, 2))
   }
 
-  get mag () {
-    return Math.sqrt(this.x * this.x + this.y * this.y)
-  }
   add (other) {
     this.x = this.x + other.x
     this.y = this.y + other.y
