@@ -2,8 +2,8 @@ import Vector from './Vector'
 import Explosion from './Explosion'
 
 export default class Ship {
-  constructor (x, y) {
-    this.r = 10
+  constructor (x, y, radius) {
+    this.r = radius
 
     this.initialPos = new Vector(x, y)
     this.pos = new Vector(x, y)
@@ -68,7 +68,7 @@ export default class Ship {
     if (!this.explosion) {
       const movmentDir = this.vel.angle
       const speed = this.vel.mag
-      this.explosion = new Explosion(this.pos.x, this.pos.y, movmentDir, speed)
+      this.explosion = new Explosion(this.pos.x, this.pos.y, movmentDir, speed, this.r)
     }
   }
 
@@ -95,7 +95,7 @@ export default class Ship {
 
     ctx.beginPath()
     ctx.strokeStyle = '#0FF'
-    ctx.lineWidth = 4
+    ctx.lineWidth = this.r / 4
     const r = this.r * 0.5
     ctx.ellipse(0, 0, r, r, 0, -Math.PI / 4, Math.PI / 4)
 

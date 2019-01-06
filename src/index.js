@@ -1,11 +1,7 @@
 // TODO
-// better collision on 'lone walls'
 // better design for portal
 // animation when ship goes into portal
-// better difficulty system between levels
 // power gauge ??
-// cellW : by number of cells in a row
-// ==> ship radius relative to width as well
 
 import Ship from './lib/Ship'
 import Maze from './lib/Maze'
@@ -22,37 +18,31 @@ const h = 300
 canvas.width = w
 canvas.height = h
 
-window.options = {
-  collisions: true,
-  collisionsDebugCircle: false
-}
+// TODO get rid of dat
 let level = 1
-// const levelSelect = document.getElementById('level')
-// levelSelect.addEventListener('change', () => {
-//   level = levelSelect.value
-//   newGame()
-// })
+
+window.setLevel = function (l) {
+  level = l
+  newGame()
+}
+
 newGame()
 
-function getCellSize (level) {
-  return 120 - ((level) * 10)
-}
-
 function newGame () {
-  let cellW = getCellSize(level)
-
-  const cols = Math.floor(w / cellW)
-  cellW = w / cols // we change slightly cellW so it's a multiple of canvas w
-  const rows = Math.floor(h / cellW)
-  const cellH = h / rows // the same for cellH
-
+  const cols = level + 2
+  const cellW = w / cols
+  let cellH = cellW // error, might not be a multiple of h
+  const rows = Math.ceil(h / cellH)
+  cellH = h / rows
+  const minCellDim = Math.min(cellW, cellH)
+  console.log('cols, rows, cellW, cellH', cols, rows, cellW, cellH, minCellDim)
   const maze = new Maze(cols, rows, cellW, cellH)
 
-  const ship = new Ship(cellW / 2, cellH / 2) // starts at top left
+  const ship = new Ship(cellW / 2, cellH / 2, 10) // starts at top left
 
   const portalX = maze.furthestCellCoords.i * cellW + cellW / 2
   const portalY = maze.furthestCellCoords.j * cellH + cellH / 2
-  const portal = new Portal(portalX, portalY, cellW / 2)
+  const portal = new Portal(portalX, portalY, minCellDim / 2)
 
   gameLoop(ship, maze, portal)
 }

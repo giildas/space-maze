@@ -27,7 +27,7 @@ export default class Particle {
     ctx.save()
     ctx.translate(this.pos.x, this.pos.y)
     ctx.rotate(this.rota)
-    ctx.fillRect(-2.5, -5, 5, 10)
+    ctx.fillRect(-this.size / 2, -this.size, this.size, this.size * 2)
     ctx.restore()
   }
 }

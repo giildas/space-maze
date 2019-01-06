@@ -2,14 +2,14 @@
 import Particle from './Particle'
 
 export default class Explosion {
-  constructor (x, y, angle, speed) {
+  constructor (x, y, angle, speed, size) {
     this.particles = []
     for (let i = 0; i < 10; i++) {
       const a = angle + ((Math.random() - 0.5) * Math.PI / 2)
       const s = speed + (Math.random() - 1)
       const damping = 0.95
       const color = i === 0 ? '#0FF' : '#999'
-      this.particles[i] = new Particle(x, y, a, s, damping, 5, color)
+      this.particles[i] = new Particle(x, y, a, s, damping, size / 2, color)
     }
   }
 
