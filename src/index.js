@@ -1,6 +1,5 @@
 // TODO
 // better design for portal
-// animation when ship goes into portal
 // power gauge ??
 
 import Ship from './lib/Ship'
@@ -18,31 +17,32 @@ const h = 300
 canvas.width = w
 canvas.height = h
 
-// TODO get rid of dat
 let level = 1
 
 window.setLevel = function (l) {
   level = l
-  newGame()
+  startLevel()
 }
 
-newGame()
+startLevel()
 
-function newGame () {
+function startLevel () {
   const cols = level + 2
   const cellW = w / cols
   let cellH = cellW // error, might not be a multiple of h
   const rows = Math.ceil(h / cellH)
+
   cellH = h / rows
+
   const minCellDim = Math.min(cellW, cellH)
-  console.log('cols, rows, cellW, cellH', cols, rows, cellW, cellH, minCellDim)
+
   const maze = new Maze(cols, rows, cellW, cellH)
 
   const ship = new Ship(cellW / 2, cellH / 2, 10) // starts at top left
 
   const portalX = maze.furthestCellCoords.i * cellW + cellW / 2
   const portalY = maze.furthestCellCoords.j * cellH + cellH / 2
-  const portal = new Portal(portalX, portalY, minCellDim / 2)
+  const portal = new Portal(portalX, portalY, minCellDim / 2.5)
 
   gameLoop(ship, maze, portal)
 }
@@ -57,7 +57,8 @@ function gameLoop (ship, maze, portal) {
   ctx.fillText(text, 10, 15)
 
   ship.update()
-  const coll = maze.collides(ship)
+
+  const collisionWithWall = maze.collides(ship)
 
   maze.draw(ctx)
   portal.draw(ctx)
@@ -65,21 +66,19 @@ function gameLoop (ship, maze, portal) {
   ship.draw(ctx)
 
   // collision with walls
-  if (coll !== false) {
-    ship.explode()
-    setTimeout(() => {
+  if (collisionWithWall) {
+    ship.explode(() => {
       ship.resetPos()
-    }, 500)
+    })
   }
 
   const arrived = portal.collides(ship)
+
   if (arrived) {
-    level += 1
-    newGame()
-    return
-    // setTimeout(() => {
-    //   return
-    // }, 3000)
+    ship.enterPortal(portal, () => {
+      level += 1
+      startLevel()
+    })
   }
 
   requestAnimationFrame(() => {

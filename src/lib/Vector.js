@@ -8,11 +8,15 @@ export default class Vector {
     return new Vector(length * Math.cos(angle), length * Math.sin(angle))
   }
 
+  clone () {
+    return new Vector(this.x, this.y)
+  }
+
   get mag () {
     return Math.sqrt(this.x * this.x + this.y * this.y)
   }
   get angle () {
-    return Math.atan(this.y / this.x)
+    return Math.atan2(this.y, this.x)
   }
 
   distance (other) {
@@ -35,5 +39,11 @@ export default class Vector {
     const currentMag = this.mag
     this.x = this.x * mag / currentMag
     this.y = this.y * mag / currentMag
+  }
+
+  constrain (mag) {
+    if (this.mag > mag) {
+      this.setMag(mag)
+    }
   }
 }

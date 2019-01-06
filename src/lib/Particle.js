@@ -6,9 +6,9 @@ export default class Particle {
     this.initPos = new Vector(x, y)
 
     this.vel = Vector.fromAngle(angle, initialSpeed)
+    // console.log('this.vel', this.vel)
     this.damping = damping
 
-    this.angle = angle
     this.size = size
     this.color = color
 
