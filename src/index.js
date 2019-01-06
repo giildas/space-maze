@@ -44,16 +44,18 @@ function startLevel () {
   const portalY = maze.furthestCellCoords.j * cellH + cellH / 2
   const portal = new Portal(portalX, portalY, minCellDim / 2.5)
 
-  gameLoop(ship, maze, portal)
+  requestAnimationFrame((time) => {
+    gameLoop(ship, maze, portal, time)
+  })
 }
 
-function gameLoop (ship, maze, portal) {
+function gameLoop (ship, maze, portal, time) {
   ctx.fillStyle = '#111'
   ctx.fillRect(0, 0, w, h)
 
   ctx.fillStyle = '#FFF'
   ctx.font = '13px serif'
-  const text = `Level ${level}` // - Cell: ${maze.cellW} x ${maze.cellH}`
+  const text = `Level ${level} - Time: ${time}` // - Cell: ${maze.cellW} x ${maze.cellH}`
   ctx.fillText(text, 10, 15)
 
   ship.update()
@@ -61,7 +63,7 @@ function gameLoop (ship, maze, portal) {
   const collisionWithWall = maze.collides(ship)
 
   maze.draw(ctx)
-  portal.draw(ctx)
+  portal.draw(ctx, time)
 
   ship.draw(ctx)
 
@@ -81,7 +83,7 @@ function gameLoop (ship, maze, portal) {
     })
   }
 
-  requestAnimationFrame(() => {
-    gameLoop(ship, maze, portal)
+  requestAnimationFrame((time) => {
+    gameLoop(ship, maze, portal, time)
   })
 }

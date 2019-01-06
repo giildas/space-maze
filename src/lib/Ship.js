@@ -46,30 +46,50 @@ export default class Ship {
     this.shipAngleOffset = 0
 
     this.boost = false
+    this.enteringPortal = false
   }
 
   update () {
     if (this.explosion) return
 
+    // common update operation
     this.pos.add(this.vel)
     const newAngle = this.angle + this.shipAngleOffset
     this.angle = newAngle
-    if (this.boost) {
+
+    if (this.enteringPortal) {
+      this.r -= 0.1
+      this.r = Math.max(this.r, 0.1)
+    } else if (this.boost) {
       const force = Vector.fromAngle(this.angle, this.boostPower)
       this.vel.add(force)
-
-      if (this.vel.mag > 3) {
-        this.vel.setMag(3)
-      }
+      this.vel.constrain(3)
     }
   }
 
-  explode () {
+  explode (cb) {
     if (!this.explosion) {
       const movmentDir = this.vel.angle
+
       const speed = this.vel.mag
-      this.explosion = new Explosion(this.pos.x, this.pos.y, movmentDir, speed, this.r)
+      this.explosion = new Explosion(this.pos.x, this.pos.y, movmentDir, speed, this.r, cb)
     }
+  }
+
+  enterPortal (portal, cb) {
+    if (this.enteringPortal) return
+
+    this.enteringPortal = true
+    this.portalCb = cb
+    this.portalPos = portal.pos
+
+    const p = this.pos.clone()
+    p.subtract(portal.pos)
+    p.mult(-1)
+    p.setMag(1)
+    this.vel = p
+
+    setTimeout(cb, 750)
   }
 
   draw (ctx) {
