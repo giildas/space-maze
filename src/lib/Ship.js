@@ -12,29 +12,15 @@ export default class Ship {
     this.angle = 0
     this.shipAngleOffset = 0
 
-    this.boost = false
-    this.boostPower = 0.07
+    this.boost = 0
 
     this.explosion = null
-
-    this.addKeysListeners()
   }
 
-  addKeysListeners () {
-    window.addEventListener('keydown', this.onKeyDown.bind(this))
-    window.addEventListener('keyup', this.onKeyUp.bind(this))
-  }
-
-  onKeyDown (e) {
-    if (e.keyCode === 37) this.shipAngleOffset = -0.15
-    if (e.keyCode === 39) this.shipAngleOffset = 0.15
-    if (e.keyCode === 38) this.boost = true
-  }
-
-  onKeyUp (e) {
-    if (e.keyCode === 37 || e.keyCode === 39) this.shipAngleOffset = 0
-    if (e.keyCode === 38) this.boost = false
-  }
+  startTurning (offset) { this.shipAngleOffset = offset }
+  stopTurning () { this.shipAngleOffset = 0 }
+  startBoost (boostPower) { this.boost = boostPower }
+  stopBoost () { this.boost = 0 }
 
   resetPos () {
     if (!this.explosion) return // no reset of the ship while it's not exploding
@@ -45,7 +31,7 @@ export default class Ship {
     this.angle = 0
     this.shipAngleOffset = 0
 
-    this.boost = false
+    this.boost = 0
     this.enteringPortal = false
   }
 
@@ -57,13 +43,15 @@ export default class Ship {
     const newAngle = this.angle + this.shipAngleOffset
     this.angle = newAngle
 
+    if (this.boost > 0) {
+      const force = Vector.fromAngle(this.angle, this.boost)
+      this.vel.add(force)
+      this.vel.constrain(3)
+    }
+
     if (this.enteringPortal) {
       this.r -= 0.1
       this.r = Math.max(this.r, 0.1)
-    } else if (this.boost) {
-      const force = Vector.fromAngle(this.angle, this.boostPower)
-      this.vel.add(force)
-      this.vel.constrain(3)
     }
   }
 
@@ -97,9 +85,7 @@ export default class Ship {
       this.explosion.draw(ctx)
     } else {
       this._drawShip(ctx, this.pos.x, this.pos.y)
-      if (this.boost) {
-        this._drawBoost(ctx, this.pos.x, this.pos.y, 2, '#ff860d')
-      }
+      this._drawBoost(ctx, this.pos.x, this.pos.y, 2, '#ff860d')
     }
   }
 
@@ -119,14 +105,14 @@ export default class Ship {
     const r = this.r * 0.5
     ctx.ellipse(0, 0, r, r, 0, -Math.PI / 4, Math.PI / 4)
 
-    // ctx.moveTo(0, 0)
-    // ctx.lineTo(this.r, 0)
     ctx.stroke()
     ctx.closePath()
     ctx.restore()
   }
 
   _drawBoost (ctx, x, y, scale, color) {
+    if (this.boost === 0) return
+
     ctx.save()
     ctx.translate(x, y)
     ctx.rotate(this.angle)

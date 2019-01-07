@@ -125,14 +125,14 @@ export default class Maze {
       this.grid[i].draw(ctx)
     }
 
-    ctx.save()
-    ctx.fillStyle = '#F00'
-    ctx.beginPath()
-    ctx.translate(this.furthestCellCoords.i * this.cellW, this.furthestCellCoords.j * this.cellH)
-    ctx.ellipse(this.cellW / 2, this.cellH / 2, 10, 10, 0, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.closePath()
-    ctx.restore()
+    // ctx.save()
+    // ctx.fillStyle = '#F00'
+    // ctx.beginPath()
+    // ctx.translate(this.furthestCellCoords.i * this.cellW, this.furthestCellCoords.j * this.cellH)
+    // ctx.ellipse(this.cellW / 2, this.cellH / 2, 10, 10, 0, 0, Math.PI * 2)
+    // ctx.fill()
+    // ctx.closePath()
+    // ctx.restore()
   }
 }
 
