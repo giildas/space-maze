@@ -1,17 +1,17 @@
 import Vector from './Vector'
-// import map from './Map'
+const nbPoints = 10
 
 export default class Portal {
   constructor (x, y, radius) {
     this.pos = new Vector(x, y)
     this.r = radius
-    this.innerR = radius * 0.4
+    this.innerR = radius * 0.3
     this.angle = 0
     this.isColliding = false
 
     this.points = []
-    for (let i = 0; i < 12; i++) {
-      const a = Math.PI * 2 / 12 * i
+    for (let i = 0; i < nbPoints; i++) {
+      const a = Math.PI * 2 / nbPoints * i
       const r = i % 2 === 0 ? this.r : this.innerR + 3
       const x = Math.cos(a) * r
       const y = Math.sin(a) * r
@@ -30,11 +30,6 @@ export default class Portal {
   }
 
   draw (ctx, time) {
-    // ctx.beginPath()
-    // ctx.ellipse(0, 0, this.r, this.r, 0, 0, Math.PI * 2)
-    // ctx.fill()
-    // ctx.closePath()
-
     ctx.save()
     ctx.translate(this.pos.x, this.pos.y)
     ctx.rotate(this.angle)
@@ -42,35 +37,38 @@ export default class Portal {
     ctx.strokeStyle = '#AAA'
     ctx.fillStyle = '#AAA'
     ctx.lineWidth = 3
-    ctx.moveTo(this.points[0].x, this.points[0].y)
     for (let i = 0; i < this.points.length; i++) {
       const { x, y } = this.points[i]
-      ctx.lineTo(x, y)
-      if (i % 2 == 0) ctx.fillRect(x - 8, y - 8, 16, 16)
+      ctx.translate(x, y)
+      ctx.lineTo(0, 0)
+
+      if (i % 2 === 0) {
+        ctx.rotate(Math.PI * 2 * i / this.points.length)
+        ctx.fillRect(-6, -6, 12, 12)
+        ctx.rotate(-Math.PI * 2 * i / this.points.length)
+      }
+      ctx.translate(-x, -y)
     }
-    ctx.lineTo(this.points[0].x, this.points[0].y)
     ctx.closePath()
     ctx.stroke()
     ctx.restore()
 
-    // dessiner les branches
+    // dessiner les rayons
     if (this.isColliding) {
-      ctx.beginPath()
-      ctx.strokeStyle = '#0FF'
       ctx.lineWidth = 2
 
-      for (let i = 0; i < 12; i += 2) {
+      for (let i = 1; i < this.points.length; i += 2) {
         const { x, y } = this.points[i]
         ctx.save()
         ctx.translate(this.pos.x, this.pos.y)
         ctx.rotate(this.angle)
+        ctx.beginPath()
         ctx.moveTo(x, y)
         ctx.restore()
-        ctx.lineTo(this.isColliding.x, this.isColliding.y)
+        ctx.strokeStyle = i % 2 == 0 ? '#FF00FF' : '#0FF'
+        ctx.lineTo(this.isColliding.x, this.isColliding.y) // ship pos
+        ctx.stroke()
       }
-
-      ctx.closePath()
-      ctx.stroke()
     }
 
     // const r = map(Math.cos(time / 500), -1, 1, 2, this.r - this.r / 2)
