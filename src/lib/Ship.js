@@ -6,6 +6,7 @@ export default class Ship {
     this.r = radius
 
     this.initialPos = new Vector(x, y)
+    this.acceleration = new Vector(0, 0)
     this.pos = new Vector(x, y)
     this.vel = new Vector(0, 0)
 
@@ -33,26 +34,44 @@ export default class Ship {
 
     this.boost = 0
     this.enteringPortal = false
+
+    this.acceleration = new Vector(0, 0)
   }
 
-  update () {
+  update (deltaTime) {
     if (this.explosion) return
 
-    // common update operation
-    this.pos.add(this.vel)
-    const newAngle = this.angle + this.shipAngleOffset
+    // update operation
+    // this.pos = position du vaisseau
+    // acceleration : ajouté à la vélocité, doit etre proportionnel à deltatime
+    // this.vel: vitesse
+    //    * ajouté à chaque frame (si framerate 60, doit etre 3x inf à framerate 20 ...)
+    //    * constraint à une vitesse max, si framerate
+    //
+
+    const newAngle = this.angle + this.shipAngleOffset * 0.001 * deltaTime
     this.angle = newAngle
 
-    if (this.boost > 0) {
-      const force = Vector.fromAngle(this.angle, this.boost)
-      this.vel.add(force)
-      this.vel.constrain(3)
+    if (this.boost > 0 && !this.enteringPortal) {
+      this.acceleration = Vector.fromAngle(this.angle, this.boost * 0.001 * deltaTime)
+    } else {
+      this.acceleration = new Vector(0, 0)
     }
+    this.vel.add(this.acceleration)
+    this.vel.constrain(0.3 * deltaTime)
+    this.pos.add(this.vel)
 
     if (this.enteringPortal) {
       this.r -= 0.1
       this.r = Math.max(this.r, 0.1)
     }
+  }
+
+  edges (w, h) {
+    if (this.pos.x > w + this.r) this.pos.x = 0
+    if (this.pos.y > h + this.r) this.pos.y = 0
+    if (this.pos.x < -this.r) this.pos.x = w + this.r
+    if (this.pos.y < -this.r + this.r) this.pos.y = h + this.r
   }
 
   explode (cb) {

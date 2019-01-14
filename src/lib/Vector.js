@@ -20,7 +20,7 @@ export default class Vector {
   }
 
   distance (other) {
-    return Math.sqrt(Math.pow(other.x - this.x, 2) + Math.pow(other.y - this.y, 2))
+    return Math.hypot(other.x - this.x, other.y - this.y)
   }
 
   add (other) {

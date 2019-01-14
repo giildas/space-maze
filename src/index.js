@@ -5,7 +5,7 @@
 // start menu
 // end level
 // screens between levels with stats (time, nb of tries...)
-// procedural backgrounds (nebulae, clouds, stars  ...)
+// procedural backgrounds or walls (nebulae, clouds, stars  ...)
 
 import './app.css'
 import Ship from './lib/Ship'
@@ -13,10 +13,15 @@ import Maze from './lib/Maze'
 import Portal from './lib/Portal'
 import Keys from './lib/Keys'
 
+import { round } from './lib/Utils'
+
 const OPTIONS = {
-  shipAngleOffset: 0.15,
-  shipBoostPower: 0.06
+  shipAngleOffset: 10, // speed of turning
+  shipBoostPower: 10, // the lower the harder
+  debug: true
 }
+
+const keyboard = new Keys(OPTIONS.debug)
 
 const canvas = document.getElementById('canvas')
 const ctx = canvas.getContext('2d')
@@ -27,10 +32,10 @@ canvas.width = w
 canvas.height = h
 
 let level = 1
-
-const keyboard = new Keys()
+let maze, ship, portal
 
 startLevel()
+requestAnimationFrame(gameLoop)
 
 function startLevel () {
   // maze grid size calculation
@@ -41,64 +46,78 @@ function startLevel () {
   cellH = h / rows
 
   // maze initialization
-  const maze = new Maze(cols, rows, cellW, cellH)
+  maze = new Maze(cols, rows, cellW, cellH)
 
   // portal initialization
   const portalX = maze.furthestCellCoords.i * cellW + cellW / 2
   const portalY = maze.furthestCellCoords.j * cellH + cellH / 2
   const minCellDim = Math.min(cellW, cellH)
-  const portal = new Portal(portalX, portalY, minCellDim / 2.5)
+
+  portal = new Portal(portalX, portalY, minCellDim / 2.5)
 
   // ship initialization
-  const ship = new Ship(cellW / 2, cellH / 2, 10) // always starts at top left
+  ship = new Ship(cellW / 2, cellH / 2, 10) // always starts at top left
   // ship controls
-  keyboard.addKeyDownAction(37, () => ship.startTurning(-OPTIONS.shipAngleOffset))
-  keyboard.addKeyDownAction(39, () => ship.startTurning(OPTIONS.shipAngleOffset))
-  keyboard.addKeyDownAction(38, () => ship.startBoost(OPTIONS.shipBoostPower))
-  keyboard.addKeyUpAction(37, () => ship.stopTurning())
-  keyboard.addKeyUpAction(39, () => ship.stopTurning())
-  keyboard.addKeyUpAction(38, () => ship.stopBoost())
-
-  requestAnimationFrame((time) => {
-    gameLoop(ship, maze, portal, time)
-  })
+  if (level == 1) {
+    keyboard.addKeysAction(37, () => ship.startTurning(-OPTIONS.shipAngleOffset), () => ship.stopTurning())
+    keyboard.addKeysAction(39, () => ship.startTurning(OPTIONS.shipAngleOffset), () => ship.stopTurning())
+    keyboard.addKeysAction(38, () => ship.startBoost(OPTIONS.shipBoostPower), () => ship.stopBoost())
+  }
 }
+// rubbish code to change fps and test that speed of ship and all is stable
+const fps_input = document.getElementById('fps')
 
-function gameLoop (ship, maze, portal, time) {
-  ctx.fillStyle = '#222'
-  ctx.fillRect(0, 0, w, h)
+let tgtFps = 60
+const intervalTolerance = 10 // in ms, tolerance
 
-  ctx.fillStyle = '#FFF'
-  ctx.font = '13px sans-serif'
-  const text = `Level ${level}` // - Time: ${time}` // - Cell: ${maze.cellW} x ${maze.cellH}`
-  ctx.fillText(text, 10, 15)
+fps_input.onchange = (e) => {
+  tgtFps = e.target.checked ? 60 : 20
+}
+let prevTime = 0
 
-  ship.update()
+function gameLoop (time) {
+  const deltaTime = time - prevTime
+  const targetInterval = 1000 / tgtFps
+  requestAnimationFrame(gameLoop)
+  if (deltaTime >= targetInterval - intervalTolerance) {
+    const framerate = 1000.0 / (time - prevTime)
+    prevTime = time
+    ctx.fillStyle = '#222'
+    ctx.fillRect(0, 0, w, h)
 
-  const collisionWithWall = maze.collides(ship)
+    ctx.fillStyle = '#FFF'
+    ctx.font = '13px sans-serif'
+    const text = `Level ${level} - deltaTime: ${deltaTime} - fps: ${framerate}` // - Time: ${time}` // - Cell: ${maze.cellW} x ${maze.cellH}`
+    ctx.fillText(text, 10, 15)
+    const velPerMs = ship.vel.mag
+    const accPerMs = ship.acceleration.mag
+    const text2 = `Ship vel: ${round(velPerMs, 3)} - Ship acc: ${round(accPerMs, 3)}` // - Time: ${time}` // - Cell: ${maze.cellW} x ${maze.cellH}`
+    ctx.fillText(text2, 10, 30)
 
-  maze.draw(ctx)
-  portal.draw(ctx, time)
+    ship.update(deltaTime)
+    if (OPTIONS.debug) ship.edges(w, h)
 
-  ship.draw(ctx)
+    const collisionWithWall = OPTIONS.debug ? false : maze.collides(ship)
+    const arrived = OPTIONS.debug ? false : portal.collides(ship)
 
-  // collision with walls
-  if (collisionWithWall) {
-    ship.explode(() => {
-      ship.resetPos()
-    })
+    maze.draw(ctx, time)
+    portal.draw(ctx, time)
+
+    ship.draw(ctx, time)
+
+    // collision with walls
+    if (collisionWithWall) {
+      ship.explode(() => {
+        ship.resetPos()
+      })
+    }
+
+    if (arrived) {
+      ship.enterPortal(portal, () => {
+        level += 1
+        startLevel()
+        prevTime = 0
+      })
+    }
   }
-
-  const arrived = portal.collides(ship)
-
-  if (arrived) {
-    ship.enterPortal(portal, () => {
-      level += 1
-      startLevel()
-    })
-  }
-
-  requestAnimationFrame((time) => {
-    gameLoop(ship, maze, portal, time)
-  })
 }

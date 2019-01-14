@@ -1,5 +1,6 @@
 export default class Keys {
-  constructor () {
+  constructor (debug) {
+    this.debug = debug
     this.keyDownActions = {}
     this.keyUpActions = {}
     this.addKeysListeners()
@@ -18,7 +19,13 @@ export default class Keys {
     this.keyUpActions[keyCode] = fn
   }
 
+  addKeysAction (keyCode, downFn, upFn) {
+    this.addKeyDownAction(keyCode, downFn)
+    this.addKeyUpAction(keyCode, upFn)
+  }
+
   onKeyDown (e) {
+    if (this.debug) console.log('KEYDOWN', e.keyCode)
     if (this.keyDownActions[e.keyCode] !== undefined) {
       this.keyDownActions[e.keyCode]()
     }

@@ -1,5 +1,5 @@
 import Vector from './Vector'
-import map from './Map'
+import { map } from './Utils'
 const nbPoints = 10
 
 export default class Portal {
