@@ -21,7 +21,7 @@ const OPTIONS = {
   debug: false,
   wallCollision: true,
   portalCollision: true,
-  lastLevel: 8
+  lastLevel: 3 // level 3 will be the last one
 }
 
 const GAME_IS = {
@@ -85,7 +85,8 @@ class Mazesteroid extends canvasGameEngine {
     const portalY = this.maze.furthestCellCoords.j * cellH + cellH / 2
     const minCellDim = Math.min(cellW, cellH)
 
-    this.portal = new Portal(portalX, portalY, minCellDim / 2.5)
+    const isLastLevel = OPTIONS.lastLevel == this.level
+    this.portal = new Portal(portalX, portalY, minCellDim / 2.5, isLastLevel)
 
     // ship initialization
     this.ship = new Ship(cellW / 2, cellH / 2, 10) // always starts at top left
@@ -120,7 +121,7 @@ class Mazesteroid extends canvasGameEngine {
 
       if (arrived) {
         this.ship.enterPortal(this.portal, () => {
-          if (this.level + 1 === OPTIONS.lastLevel) {
+          if (this.level + 1 > OPTIONS.lastLevel) {
             this.gameState = GAME_IS.FINISHED
           } else {
             this.gameState = GAME_IS.UNSTARTED
