@@ -1,4 +1,4 @@
-import Vector from './Vector'
+import Vector from './lib/Vector'
 
 export default class Particle {
   constructor (x, y, angle, initialSpeed, damping, size, color) {

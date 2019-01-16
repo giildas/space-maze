@@ -1,5 +1,5 @@
-import Vector from './Vector'
-import { map } from './Utils'
+import Vector from './lib/Vector'
+import { map } from './lib/Utils'
 const nbPoints = 10
 
 export default class Portal {
@@ -24,14 +24,14 @@ export default class Portal {
     return collides
   }
 
-  draw (ctx, time) {
+  draw (ctx) {
     ctx.strokeStyle = '#aaa'
     ctx.lineWidth = this.strokeWidth
 
     ctx.save()
     ctx.translate(this.pos.x, this.pos.y)
 
-    const r = map(Math.sin(time / 500), -1, 1, 2, this.r - this.r / 2)
+    const r = map(Math.sin(performance.now() / 500), -1, 1, 2, this.r - this.r / 2)
     const gradient = ctx.createRadialGradient(0, 0, r, 0, 0, this.r)
     gradient.addColorStop(0, '#a9f3fa')
     gradient.addColorStop(1, '#0aaba7')

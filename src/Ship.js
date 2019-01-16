@@ -1,4 +1,4 @@
-import Vector from './Vector'
+import Vector from './lib/Vector'
 import Explosion from './Explosion'
 
 export default class Ship {
