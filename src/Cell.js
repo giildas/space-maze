@@ -5,7 +5,7 @@ export default class Cell {
     this.cellW = cellW
     this.cellH = cellH
     // this.size = size
-    this.wallWidth = 1
+    this.wallWidth = 2
 
     this.index = index
 

@@ -1,9 +1,8 @@
 // TODO
-// cleaner structure for anims
-// start menu & end level
-// screens between levels with stats (time, nb of tries...)
+// dont use setTimeout for anims
+// stats between levels (time, nb of tries...)
 // procedural backgrounds or walls (nebulae, clouds, stars  ...)
-// use some game engine structure
+// light in front of the ship, cf https://www.youtube.com/watch?v=fc3nnG2CG8U
 
 import './app.css'
 
@@ -21,7 +20,7 @@ const OPTIONS = {
   debug: false,
   wallCollision: true,
   portalCollision: true,
-  lastLevel: 3 // level 3 will be the last one
+  lastLevel: 8 // level 3 will be the last one
 }
 
 const GAME_IS = {
@@ -156,4 +155,4 @@ class Mazesteroid extends canvasGameEngine {
 }
 
 // make the game and start it
-new Mazesteroid('canvas', 'Maze Asteroid', 600, 300).start()
+new Mazesteroid('canvas', 'Space Maze', 600, 300).start()
