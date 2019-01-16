@@ -9,7 +9,7 @@ export default class canvasGameEngine {
     this.w = w
     this.h = h
 
-    this.ctx = canvas.getContext('2d')
+    this.ctx = this.canvas.getContext('2d')
 
     window.document.title = name
     this.setup()

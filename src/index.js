@@ -2,13 +2,13 @@
 // dont use setTimeout for anims
 // stats between levels (time, nb of tries...)
 // procedural backgrounds or walls (nebulae, clouds, stars  ...)
-// light in front of the ship, cf https://www.youtube.com/watch?v=fc3nnG2CG8U
+// procedural sounds
+// procedural light in front of the ship, cf https://www.youtube.com/watch?v=fc3nnG2CG8U
 
 import './app.css'
 
 import canvasGameEngine from './lib/canvasGameEngine'
 import Keys from './lib/Keys'
-// import { round } from './lib/Utils'
 
 import Ship from './Ship'
 import Maze from './Maze'
@@ -84,7 +84,7 @@ class Mazesteroid extends canvasGameEngine {
     const portalY = this.maze.furthestCellCoords.j * cellH + cellH / 2
     const minCellDim = Math.min(cellW, cellH)
 
-    const isLastLevel = OPTIONS.lastLevel == this.level
+    const isLastLevel = OPTIONS.lastLevel === this.level
     this.portal = new Portal(portalX, portalY, minCellDim / 2.5, isLastLevel)
 
     // ship initialization

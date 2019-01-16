@@ -1,6 +1,5 @@
 import Vector from './lib/Vector'
 import { map } from './lib/Utils'
-const nbPoints = 10
 
 export default class Portal {
   constructor (x, y, radius, isLastLevel) {
