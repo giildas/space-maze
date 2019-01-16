@@ -24,7 +24,7 @@ export default class Ship {
   stopBoost () { this.boost = 0 }
 
   resetPos () {
-    if (!this.explosion) return // no reset of the ship while it's not exploding
+    // if (!this.explosion) return // no reset of the ship while it's not exploding
 
     this.explosion = null
     this.pos = new Vector(this.initialPos.x, this.initialPos.y)
@@ -58,7 +58,7 @@ export default class Ship {
       this.acceleration = new Vector(0, 0)
     }
     this.vel.add(this.acceleration)
-    this.vel.constrain(0.3 * deltaTime)
+    this.vel.constrain(0.2 * deltaTime)
     this.pos.add(this.vel)
 
     if (this.enteringPortal) {
@@ -96,7 +96,7 @@ export default class Ship {
     p.setMag(1)
     this.vel = p
 
-    setTimeout(cb, 750)
+    setTimeout(cb, 500)
   }
 
   draw (ctx) {
