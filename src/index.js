@@ -18,7 +18,18 @@ import Portal from './Portal'
 const OPTIONS = {
   shipAngleOffset: 10, // speed of turning
   shipBoostPower: 10, // the lower the harder
-  debug: false
+  debug: false,
+  wallCollision: true,
+  portalCollision: true,
+  lastLevel: 8
+}
+
+const GAME_IS = {
+  UNSTARTED: 0,
+  RUNNING: 1,
+  PAUSED: 2,
+  FINISHED: 3,
+  LOST: 4
 }
 
 const keyboard = new Keys(OPTIONS.debug)
@@ -27,8 +38,39 @@ class Mazesteroid extends canvasGameEngine {
   setup () {
     // game state
     this.level = 1
-    // game objects
+    this.gameState = GAME_IS.UNSTARTED
+    this.newLevel()
 
+    // game events
+    keyboard.addKeysAction(37, () => this.ship.startTurning(-OPTIONS.shipAngleOffset), () => this.ship.stopTurning())
+    keyboard.addKeysAction(39, () => this.ship.startTurning(OPTIONS.shipAngleOffset), () => this.ship.stopTurning())
+    keyboard.addKeysAction(38, () => {
+      if (this.gameState === GAME_IS.RUNNING) this.ship.startBoost(OPTIONS.shipBoostPower)
+    }, () => this.ship.stopBoost())
+    keyboard.addKeyDownAction(82, () => this.ship.resetPos())
+    keyboard.addKeyDownAction(32, () => {
+      // some logic
+      switch (this.gameState) {
+        case GAME_IS.UNSTARTED:
+          this.gameState = GAME_IS.RUNNING
+          break
+        case GAME_IS.RUNNING:
+          this.gameState = GAME_IS.PAUSED
+          break
+        case GAME_IS.PAUSED:
+          this.gameState = GAME_IS.RUNNING
+          break
+        case GAME_IS.FINISHED:
+        case GAME_IS.LOST:
+          this.gameState = GAME_IS.RUNNING
+          this.level = 1
+          this.newLevel()
+          break
+      }
+    })
+  }
+
+  newLevel () {
     // maze grid size calculation
     const cols = this.level + 2
     const cellW = this.w / cols
@@ -47,37 +89,67 @@ class Mazesteroid extends canvasGameEngine {
 
     // ship initialization
     this.ship = new Ship(cellW / 2, cellH / 2, 10) // always starts at top left
-
-    // game events
-    keyboard.addKeysAction(37, () => this.ship.startTurning(-OPTIONS.shipAngleOffset), () => this.ship.stopTurning())
-    keyboard.addKeysAction(39, () => this.ship.startTurning(OPTIONS.shipAngleOffset), () => this.ship.stopTurning())
-    keyboard.addKeysAction(38, () => this.ship.startBoost(OPTIONS.shipBoostPower), () => this.ship.stopBoost())
   }
+
   loop (elapsedTime) {
     this.ctx.fillStyle = '#000'
     this.ctx.fillRect(0, 0, this.w, this.h)
-
-    this.ship.update(elapsedTime)
-    if (OPTIONS.debug) this.ship.edges(this.w, this.h)
-
-    const collisionWithWall = OPTIONS.debug ? false : this.maze.collides(this.ship)
-    const arrived = OPTIONS.debug ? false : this.portal.collides(this.ship)
 
     this.maze.draw(this.ctx)
     this.portal.draw(this.ctx)
     this.ship.draw(this.ctx)
 
-    // collision with walls
-    if (collisionWithWall) {
-      this.ship.explode(() => {
-        this.ship.resetPos()
-      })
+    const text = `Level: ${this.level}`
+    this.ctx.fillStyle = '#FFF'
+    this.ctx.textAlign = 'left'
+    this.ctx.fillText(text, 15, 15)
+
+    if (this.gameState === GAME_IS.RUNNING) {
+      this.ship.update(elapsedTime)
+      this.ship.edges(this.w, this.h)
+
+      const collisionWithWall = OPTIONS.wallCollision ? this.maze.collides(this.ship) : false
+      const arrived = OPTIONS.portalCollision ? this.portal.collides(this.ship) : false
+
+      // collision with walls
+      if (collisionWithWall) {
+        this.ship.explode(() => {
+          this.ship.resetPos()
+        })
+      }
+
+      if (arrived) {
+        this.ship.enterPortal(this.portal, () => {
+          if (this.level + 1 === OPTIONS.lastLevel) {
+            this.gameState = GAME_IS.FINISHED
+          } else {
+            this.gameState = GAME_IS.UNSTARTED
+            this.level += 1
+            this.newLevel()
+          }
+        })
+      }
+    } else {
+      this.ctx.fillStyle = '#FFF'
+      this.ctx.fillRect(0, this.h / 2 - 15, this.w, 30)
+      this.ctx.fillStyle = '#000'
+      this.ctx.font = '18px sans-serif'
+      this.ctx.textAlign = 'center'
+      this.ctx.textBaseline = 'middle'
     }
 
-    if (arrived) {
-      this.ship.enterPortal(this.portal, () => {
-        this.level += 1
-      })
+    if (this.gameState === GAME_IS.UNSTARTED) {
+      const text = `Appuyer sur "espace" pour commencer`
+      this.ctx.fillText(text, this.w / 2, this.h / 2)
+    } else if (this.gameState === GAME_IS.PAUSED) {
+      const text = `Appuyer sur "espace" pour reprendre`
+      this.ctx.fillText(text, this.w / 2, this.h / 2)
+    } else if (this.gameState === GAME_IS.FINISHED) {
+      const text = `Gagné ! Appuyer sur "espace" pour recommencer`
+      this.ctx.fillText(text, this.w / 2, this.h / 2)
+    } else if (this.gameState === GAME_IS.LOST) {
+      const text = `Perdu ! Appuyer sur "espace" pour recommencer`
+      this.ctx.fillText(text, this.w / 2, this.h / 2)
     }
   }
 }
