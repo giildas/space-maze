@@ -2,8 +2,11 @@
 // dont use setTimeout for anims
 // stats between levels (time, nb of tries...)
 // procedural backgrounds or walls (nebulae, clouds, stars  ...)
+// => perlin noise seems to be the thing
 // procedural sounds
 // procedural light in front of the ship, cf https://www.youtube.com/watch?v=fc3nnG2CG8U
+
+// careful : rotating movement shouldn't stop, it's space !!!
 
 import './app.css'
 
@@ -18,8 +21,8 @@ const OPTIONS = {
   shipAngleOffset: 10, // speed of turning
   shipBoostPower: 10, // the lower the harder
   debug: false,
-  wallCollision: true,
-  portalCollision: true,
+  wallCollision: false,
+  portalCollision: false,
   lastLevel: 8 // level 3 will be the last one
 }
 

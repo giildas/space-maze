@@ -16,6 +16,8 @@ export default class Ship {
     this.boost = 0
 
     this.explosion = null
+
+    this.frontLightAngle = Math.PI / 6 // that is half the angle actually
   }
 
   startTurning (offset) { this.shipAngleOffset = offset }
@@ -103,15 +105,16 @@ export default class Ship {
     if (this.explosion) {
       this.explosion.draw(ctx)
     } else {
-      this._drawShip(ctx, this.pos.x, this.pos.y)
-      this._drawBoost(ctx, this.pos.x, this.pos.y, 2, '#ff860d')
+      this._drawFrontLight(ctx)
+      this._drawShip(ctx)
+      this._drawBoost(ctx)
     }
   }
 
-  _drawShip (ctx, x, y) {
+  _drawShip (ctx) {
     ctx.save()
     ctx.fillStyle = '#999'
-    ctx.translate(x, y)
+    ctx.translate(this.pos.x, this.pos.y)
     ctx.rotate(this.angle)
     ctx.beginPath()
     ctx.ellipse(0, 0, this.r, this.r, 0, 0, Math.PI * 2)
@@ -129,13 +132,13 @@ export default class Ship {
     ctx.restore()
   }
 
-  _drawBoost (ctx, x, y, scale, color) {
+  _drawBoost (ctx) { //, x, y, scale, color) {
     if (this.boost === 0) return
-
+    const scale = 2
     ctx.save()
-    ctx.translate(x, y)
+    ctx.translate(this.pos.x, this.pos.y)
     ctx.rotate(this.angle)
-    ctx.fillStyle = color
+    ctx.fillStyle = '#ff860d'
     ctx.beginPath()
     ctx.moveTo(-this.r, -this.r / 4 * scale)
     ctx.lineTo(-this.r - this.r / 1.5 * scale, 0)
@@ -143,5 +146,37 @@ export default class Ship {
     ctx.closePath()
     ctx.fill()
     ctx.restore()
+  }
+
+  _drawFrontLight (ctx) {
+    // make a gradient
+    const x2 = this.pos.x + Math.cos(this.angle) * 250
+    const y2 = this.pos.y + Math.sin(this.angle) * 250
+    const gradient = ctx.createLinearGradient(this.pos.x, this.pos.y, x2, y2)
+    gradient.addColorStop(0, 'rgba(255, 255, 0, 0.4)')
+    gradient.addColorStop(1, 'rgba(255, 255, 0, 0.1)')
+
+    ctx.save()
+    ctx.fillStyle = gradient
+    // ctx.translate(this.pos.x, this.pos.y)
+    ctx.beginPath()
+
+    let x = this.pos.x + Math.cos(this.angle - this.frontLightAngle) * 600
+    let y = this.pos.y + Math.sin(this.angle - this.frontLightAngle) * 600
+    ctx.lineTo(x, y)
+
+    x = this.pos.x + Math.cos(this.angle + this.frontLightAngle) * 600
+    y = this.pos.y + Math.sin(this.angle + this.frontLightAngle) * 600
+    ctx.lineTo(x, y)
+
+    ctx.lineTo(this.pos.x, this.pos.y)
+
+    ctx.closePath()
+    ctx.fill()
+    ctx.restore()
+
+    // ctx.fillStyle = '#FF0'
+    // ctx.fillRect(this.pos.x, this.pos.y, 5, 5)
+    // ctx.fillRect(x2, y2, 5, 5)
   }
 }
