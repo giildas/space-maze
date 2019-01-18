@@ -16,6 +16,7 @@ export default class Vector {
     return Math.sqrt(this.x * this.x + this.y * this.y)
   }
   get angle () {
+    // between -PI & +PI
     return Math.atan2(this.y, this.x)
   }
 

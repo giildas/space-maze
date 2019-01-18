@@ -39,7 +39,7 @@ const keyboard = new Keys(OPTIONS.debug)
 class Mazesteroid extends canvasGameEngine {
   setup () {
     // game state
-    this.level = 3
+    this.level = 1
     this.gameState = GAME_IS.RUNNING
     this.newLevel()
 
@@ -109,7 +109,7 @@ class Mazesteroid extends canvasGameEngine {
     this.ctx.textAlign = 'left'
     this.ctx.fillText(text, 15, 15)
 
-    const text2 = `Rays: ${this.ship.rays.length} - FPS : ${Math.floor(1000 / elapsedTime)}`
+    const text2 = `angle: ${this.ship.angle} - Rays: ${this.ship.rays.length} - FPS : ${Math.floor(1000 / elapsedTime)}`
     this.ctx.fillStyle = '#FFF'
     this.ctx.textAlign = 'right'
     this.ctx.fillText(text2, this.w - 15, 15)

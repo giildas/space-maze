@@ -53,9 +53,11 @@ export default class Ship {
     //    * ajouté à chaque frame (si framerate 60, doit etre 3x inf à framerate 20 ...)
     //    * constraint à une vitesse max, si framerate
     //
-
     const newAngle = this.angle + this.shipAngleOffset * 0.001 * deltaTime
-    this.angle = newAngle % (Math.PI * 2)
+    this.angle = newAngle
+    // angle constrained between -PI and +PI
+    if (this.angle < -Math.PI) this.angle += Math.PI * 2
+    if (this.angle > Math.PI) this.angle -= Math.PI * 2
 
     if (this.boost > 0 && !this.enteringPortal) {
       this.acceleration = Vector.fromAngle(this.angle, this.boost * 0.001 * deltaTime)
@@ -154,23 +156,31 @@ export default class Ship {
     const { edges } = maze
 
     this.rays = []
+
+    // adding a ray for left and right of light beam
+    const vStart = Vector.fromAngle(this.angle - this.frontLightAngle, length)
+    const vEnd = Vector.fromAngle(this.angle + this.frontLightAngle, length)
+    this.rays.push(vStart)
+    this.rays.push(vEnd)
+
     edges.forEach(edge => {
       for (let i = 0; i < 2; i++) {
         // créer les vecteur ray, du ship vers les extrémités de l'edge
         // si i==0 ==> vers le début
         // si i==1 ==> vers la fin de l'edge
-
         const vX = edge[i].x - this.pos.x
         const vY = edge[i].y - this.pos.y
         const v = new Vector(vX, vY)
+        v.setMag(length)
 
-        // BUG a cause du modulo de : 0 < this.angle < 2PI
-        // TODO gérer ça
         const vAngle = v.angle
-        if (
-          vAngle > this.angle - this.frontLightAngle &&
-          vAngle < this.angle + this.frontLightAngle) {
+        if (vAngle >= this.angle - this.frontLightAngle && vAngle <= this.angle + this.frontLightAngle) {
           this.rays.push(v)
+          // creer 2 autres vecteurs juste avant et juste apres l'angle
+          const v1 = Vector.fromAngle(vAngle - 0.001, length)
+          const v2 = Vector.fromAngle(vAngle + 0.001, length)
+          this.rays.push(v1)
+          this.rays.push(v2)
         }
       }
     })
@@ -186,28 +196,18 @@ export default class Ship {
       let bValid = false
       let minAng = 0
       maze.edges.forEach(e => {
-        // rdx ====> ray.x
-        // rdy ====> ray.y
-
-        // float sdx = e2.ex - e2.sx; ====> edgeVec.x
-        // float sdy = e2.ey - e2.sy; ====> edgeVec.y
-        const edgeVec = new Vector(e[1].x - e[0].x, e[1].y - e[0].y)
-
-        // si pas alignés
-        // if (fabs(sdx - rdx) > 0.0f && fabs(sdy - rdy) > 0.0f)
-        if (Math.abs(edgeVec.x - ray.x) > 0 && Math.abs(edgeVec.y - ray.y) > 0) {
-          // t2 is normalised distance from line segment start to line segment end of intersect point
-          // float t2 = (rdx * (e2.sy - oy) + (rdy * (ox - e2.sx))) / (sdx * rdy - sdy * rdx);
-          const t2 = (ray.x * (e[0].y - this.pos.y) + (ray.y * (this.pos.x - e[0].x))) / (edgeVec.x * ray.y - edgeVec.y * ray.x)
-          // t1 is normalised distance from source along ray to ray length of intersect point
-          // float t1 = (e2.sx + sdx * t2 - ox) / rdx;
-          const t1 = (e[0].x + edgeVec.x * t2 - this.pos.x) / ray.x
-
-          // if (t1 > 0 && t2 >= 0 && t2 <= 1.0f)
-          // If intersect point exists along ray, and along line segment then intersect point is valid
+        // edge coordinates
+        const eX = e[1].x - e[0].x
+        const eY = e[1].y - e[0].y
+        // test if ray and edges are not aligned
+        if (Math.abs(eX - ray.x) > 0 && Math.abs(eY - ray.y) > 0) {
+          // t2 is normalized distance from edge start to intersection point
+          const t2 = (ray.x * (e[0].y - this.pos.y) + (ray.y * (this.pos.x - e[0].x))) / (eX * ray.y - eY * ray.x)
+          // t1 is normalised distance from ship to line intersection point
+          const t1 = (e[0].x + eX * t2 - this.pos.x) / ray.x
+          // if intersect point exists along ray, and along line segment then intersect point is valid
           if (t1 > 0 && t2 >= 0 && t2 <= 1) {
-          // Check if this intersect point is closest to source. If
-          // it is, then store this point and reject others
+            // keep only the closest intersection from the ship
             if (t1 < minT1) {
               minT1 = t1
               minPx = this.pos.x + ray.x * t1
@@ -220,10 +220,18 @@ export default class Ship {
       })
       if (bValid) this._points.push([minAng, minPx, minPy])
     })
+
+    // on trie les points par leur angle
+    this._points = this._points.sort((a, b) => {
+      if (a[0] < b[0]) return -1
+      if (a[0] === b[0]) return 0
+      return 1
+    })
   }
 
   drawRays (ctx) {
     ctx.lineWidth = 1
+
     this.rays.forEach(ray => {
       ctx.beginPath()
       ctx.strokeStyle = '#F00'
@@ -232,17 +240,22 @@ export default class Ship {
       ctx.stroke()
     })
 
-    this._points.forEach(p => {
+    this._points.forEach((p, index) => {
       ctx.fillStyle = '#FF0'
       ctx.beginPath()
-      ctx.ellipse(p[1], p[2], 5, 5, 0, 0, Math.PI * 2)
+      ctx.ellipse(p[1], p[2], 10, 10, 0, 0, Math.PI * 2)
       ctx.fill()
+
+      ctx.fillStyle = '#00F'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(index, p[1], p[2])
     })
   }
 
   drawFrontLight (ctx, maze) {
     if (this.explosion) return
-    const length = 600
+    const length = 1000
     // make a gradient
     const x2 = this.pos.x + Math.cos(this.angle) * 600
     const y2 = this.pos.y + Math.sin(this.angle) * 600
@@ -252,27 +265,41 @@ export default class Ship {
 
     // 1 - envoyer X rays dans toute la surface de la lumière avant
     this.makeRays(length, maze)
-    this.calculateRaysIntersection(maze)
-    this.drawRays(ctx)
     // 2 - si un ray insersecte avec un mur, mettre un point
+    this.calculateRaysIntersection(maze)
+    // 2.1 - dessiner les rays (debug)
+    // this.drawRays(ctx)
 
+    // 3 - dessiner les triangles ainsi formés dans this._points
     ctx.beginPath()
+    ctx.fillStyle = gradient
+    ctx.moveTo(this.pos.x, this.pos.y) // centre
+    this._points.forEach(p => {
+      ctx.lineTo(p[1], p[2])
+    })
+    ctx.closePath()
+    ctx.fill()
+    // ctx.lineTo(this.pos.x, this.pos.y)
+
+    // dessiner les bords du beam
+    ctx.beginPath()
+    ctx.strokeStyle = '#FF0'
+    ctx.lineWidth = 2
+    ctx.moveTo(this.pos.x, this.pos.y) // centre
     let x = this.pos.x + Math.cos(this.angle - this.frontLightAngle) * length
     let y = this.pos.y + Math.sin(this.angle - this.frontLightAngle) * length
     ctx.lineTo(x, y)
+    ctx.closePath()
+    ctx.stroke()
 
+    ctx.beginPath()
+    ctx.strokeStyle = '#FF0'
+    ctx.lineWidth = 2
+    ctx.moveTo(this.pos.x, this.pos.y) // centre
     x = this.pos.x + Math.cos(this.angle + this.frontLightAngle) * length
     y = this.pos.y + Math.sin(this.angle + this.frontLightAngle) * length
     ctx.lineTo(x, y)
-
-    ctx.lineTo(this.pos.x, this.pos.y)
-
     ctx.closePath()
-    ctx.fillStyle = gradient
-    ctx.fill()
-
-    // ctx.fillStyle = '#FF0'
-    // ctx.fillRect(this.pos.x, this.pos.y, 5, 5)
-    // ctx.fillRect(x2, y2, 5, 5)
+    ctx.stroke()
   }
 }
