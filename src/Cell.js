@@ -4,8 +4,6 @@ export default class Cell {
     this.j = j
     this.cellW = cellW
     this.cellH = cellH
-    // this.size = size
-    this.wallWidth = 2
 
     this.index = index
 
@@ -39,9 +37,13 @@ export default class Cell {
     const x = this.i * this.cellW
     const y = this.j * this.cellH
 
-    ctx.strokeStyle = '#FFF'
-    ctx.lineWidth = this.wallWidth
+    ctx.strokeStyle = 'rgba(0, 255, 0, 0.2)'
+    ctx.lineWidth = 1
 
+    ctx.strokeRect(x, y, this.cellW, this.cellH)
+
+    ctx.strokeStyle = '#FFF'
+    ctx.lineWidth = 2
     if (this.walls.n) {
       this._drawWall(ctx, x, y, x + this.cellW, y)
     }

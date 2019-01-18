@@ -1,4 +1,5 @@
 import Cell from './Cell.js'
+import Vector from './lib/Vector'
 
 export default class Maze {
   constructor (cols, rows, cellW, cellH) {
@@ -27,6 +28,28 @@ export default class Maze {
     while (!mazeDone) {
       mazeDone = this.nextBuildStep()
     }
+
+    // ici recuperer les edges des cellules
+    // TODO : remove doubles !!!
+    this.edges = []
+    this.grid.forEach(cell => {
+      if (cell.walls.n) this._addEdge(cell, 0, 0, 1, 0)
+      if (cell.walls.s) this._addEdge(cell, 0, 1, 1, 1)
+      if (cell.walls.w) this._addEdge(cell, 0, 0, 0, 1)
+      if (cell.walls.e) this._addEdge(cell, 1, 0, 1, 1)
+    })
+  }
+
+  _addEdge (cell, a, b, c, d) {
+    const x1 = cell.i + a
+    const y1 = cell.j + b
+    const x2 = cell.i + c
+    const y2 = cell.j + d
+
+    this.edges.push([
+      new Vector(x1 * this.cellW, y1 * this.cellH),
+      new Vector(x2 * this.cellW, y2 * this.cellH)
+    ])
   }
 
   checkNeighbors () {
@@ -124,6 +147,18 @@ export default class Maze {
     for (let i = 0; i < this.grid.length; i++) {
       this.grid[i].draw(ctx)
     }
+
+    // dessin des edges (debug)
+    this.edges.forEach(edge => {
+      ctx.beginPath()
+      ctx.fillStyle = '#F00'
+      ctx.ellipse(edge[0].x, edge[0].y, 5, 5, 0, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.fillStyle = '#00F'
+      ctx.ellipse(edge[1].x, edge[1].y, 5, 5, 0, 0, Math.PI * 2)
+      ctx.fill()
+    })
 
     // ctx.save()
     // ctx.fillStyle = '#F00'

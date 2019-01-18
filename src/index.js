@@ -39,8 +39,8 @@ const keyboard = new Keys(OPTIONS.debug)
 class Mazesteroid extends canvasGameEngine {
   setup () {
     // game state
-    this.level = 1
-    this.gameState = GAME_IS.UNSTARTED
+    this.level = 3
+    this.gameState = GAME_IS.RUNNING
     this.newLevel()
 
     // game events
@@ -91,7 +91,8 @@ class Mazesteroid extends canvasGameEngine {
     this.portal = new Portal(portalX, portalY, minCellDim / 2.5, isLastLevel)
 
     // ship initialization
-    this.ship = new Ship(cellW / 2, cellH / 2, 10) // always starts at top left
+    // this.ship = new Ship(cellW / 2, cellH / 2, 10) // always starts at top left
+    this.ship = new Ship(this.w / 2, this.h / 2, 10) // always starts at top left
   }
 
   loop (elapsedTime) {
@@ -100,12 +101,18 @@ class Mazesteroid extends canvasGameEngine {
 
     this.maze.draw(this.ctx)
     this.portal.draw(this.ctx)
+    this.ship.drawFrontLight(this.ctx, this.maze)
     this.ship.draw(this.ctx)
 
     const text = `Level: ${this.level}`
     this.ctx.fillStyle = '#FFF'
     this.ctx.textAlign = 'left'
     this.ctx.fillText(text, 15, 15)
+
+    const text2 = `Rays: ${this.ship.rays.length} - FPS : ${Math.floor(1000 / elapsedTime)}`
+    this.ctx.fillStyle = '#FFF'
+    this.ctx.textAlign = 'right'
+    this.ctx.fillText(text2, this.w - 15, 15)
 
     if (this.gameState === GAME_IS.RUNNING) {
       this.ship.update(elapsedTime)
