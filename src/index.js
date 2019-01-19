@@ -14,11 +14,12 @@ import canvasGameEngine from './lib/canvasGameEngine'
 import Keys from './lib/Keys'
 
 import Ship from './Ship'
+import ShipFrontLight from './ShipFrontLight'
 import Maze from './Maze'
 import Portal from './Portal'
 
 const OPTIONS = {
-  shipAngleOffset: 0.5, // speed of turning
+  shipAngleOffset: 2.5, // speed of turning
   shipBoostPower: 10, // the lower the harder
   debug: false,
   wallCollision: false,
@@ -94,6 +95,7 @@ class Mazesteroid extends canvasGameEngine {
     // ship initialization
     // this.ship = new Ship(cellW / 2, cellH / 2, 10) // always starts at top left
     this.ship = new Ship(this.w / 2, this.h / 2, 10) // always starts at top left
+    this.shipFrontLight = new ShipFrontLight()
   }
 
   loop (elapsedTime) {
@@ -102,7 +104,9 @@ class Mazesteroid extends canvasGameEngine {
 
     this.maze.draw(this.ctx)
     this.portal.draw(this.ctx)
-    this.ship.drawFrontLight(this.ctx, this.maze)
+
+    this.shipFrontLight.draw(this.ctx, this.ship)
+
     this.ship.draw(this.ctx)
 
     const text = `Level: ${this.level}`
@@ -110,13 +114,14 @@ class Mazesteroid extends canvasGameEngine {
     this.ctx.textAlign = 'left'
     this.ctx.fillText(text, 15, 15)
 
-    const text2 = `Points: ${this.ship._points.length} - Edges: ${this.maze.edges.length} - Rays: ${this.ship.rays.length} - FPS : ${Math.floor(1000 / elapsedTime)}`
+    const text2 = `Points: ${this.shipFrontLight.points.length} - Edges: ${this.maze.edges.length} - Rays: ${this.shipFrontLight.rays.length} - FPS : ${Math.floor(1000 / elapsedTime)}`
     this.ctx.fillStyle = '#FFF'
     this.ctx.textAlign = 'right'
     this.ctx.fillText(text2, this.w - 15, 15)
 
     if (this.gameState === GAME_IS.RUNNING) {
       this.ship.update(elapsedTime)
+      this.shipFrontLight.update(this.ship, this.maze)
       this.ship.edges(this.w, this.h)
 
       const collisionWithWall = OPTIONS.wallCollision ? this.maze.collides(this.ship) : false

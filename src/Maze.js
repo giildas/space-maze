@@ -180,6 +180,8 @@ export default class Maze {
 
       ctx.beginPath()
       ctx.strokeStyle = '#0F0'
+      ctx.lineWidth = 2
+
       ctx.moveTo(edge[0].x, edge[0].y)
       ctx.lineTo(edge[1].x, edge[1].y)
       ctx.stroke()
