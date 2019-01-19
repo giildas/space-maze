@@ -18,7 +18,7 @@ import Maze from './Maze'
 import Portal from './Portal'
 
 const OPTIONS = {
-  shipAngleOffset: 10, // speed of turning
+  shipAngleOffset: 0.5, // speed of turning
   shipBoostPower: 10, // the lower the harder
   debug: false,
   wallCollision: false,
@@ -34,8 +34,6 @@ const GAME_IS = {
   LOST: 4
 }
 
-const keyboard = new Keys(OPTIONS.debug)
-
 class Mazesteroid extends canvasGameEngine {
   setup () {
     // game state
@@ -44,12 +42,13 @@ class Mazesteroid extends canvasGameEngine {
     this.newLevel()
 
     // game events
+    const keyboard = new Keys(this.canvas, OPTIONS.debug)
     keyboard.addKeysAction(37, () => this.ship.startTurning(-OPTIONS.shipAngleOffset), () => this.ship.stopTurning())
     keyboard.addKeysAction(39, () => this.ship.startTurning(OPTIONS.shipAngleOffset), () => this.ship.stopTurning())
     keyboard.addKeysAction(38, () => {
       if (this.gameState === GAME_IS.RUNNING) this.ship.startBoost(OPTIONS.shipBoostPower)
     }, () => this.ship.stopBoost())
-    keyboard.addKeyDownAction(82, () => this.ship.resetPos())
+    keyboard.addKeyDownAction(82, () => this.ship.resetPos()) // r
     keyboard.addKeyDownAction(32, () => {
       // some logic
       switch (this.gameState) {
@@ -70,6 +69,8 @@ class Mazesteroid extends canvasGameEngine {
           break
       }
     })
+
+    keyboard.addMouseDownAction((e) => this.ship.resetPos(e.offsetX, e.offsetY))
   }
 
   newLevel () {
@@ -109,7 +110,7 @@ class Mazesteroid extends canvasGameEngine {
     this.ctx.textAlign = 'left'
     this.ctx.fillText(text, 15, 15)
 
-    const text2 = `angle: ${this.ship.angle} - Rays: ${this.ship.rays.length} - FPS : ${Math.floor(1000 / elapsedTime)}`
+    const text2 = `Points: ${this.ship._points.length} - Edges: ${this.maze.edges.length} - Rays: ${this.ship.rays.length} - FPS : ${Math.floor(1000 / elapsedTime)}`
     this.ctx.fillStyle = '#FFF'
     this.ctx.textAlign = 'right'
     this.ctx.fillText(text2, this.w - 15, 15)

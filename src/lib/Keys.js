@@ -1,9 +1,13 @@
 export default class Keys {
-  constructor (debug) {
+  constructor (canvasElement, debug) {
     this.debug = debug
     this.keyDownActions = {}
     this.keyUpActions = {}
     this.addKeysListeners()
+
+    this.mouseDownAction = null
+    this.mouseUpAction = null
+    this.addMouseListeners(canvasElement)
   }
 
   addKeysListeners () {
@@ -34,6 +38,21 @@ export default class Keys {
   onKeyUp (e) {
     if (this.keyUpActions[e.keyCode] !== undefined) {
       this.keyUpActions[e.keyCode]()
+    }
+  }
+
+  addMouseListeners (canvasElement) {
+    canvasElement.addEventListener('mousedown', this.onMouseDown.bind(this))
+    // canvasElement.addEventListener('mouseup', this.onMouseUp.bind(this))
+  }
+
+  addMouseDownAction (fn) {
+    this.mouseDownAction = fn
+  }
+
+  onMouseDown (e) {
+    if (this.mouseDownAction) {
+      this.mouseDownAction(e)
     }
   }
 }

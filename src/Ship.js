@@ -28,11 +28,11 @@ export default class Ship {
   startBoost (boostPower) { this.boost = boostPower }
   stopBoost () { this.boost = 0 }
 
-  resetPos () {
+  resetPos (x = this.initialPos.x, y = this.initialPos.y) {
     // if (!this.explosion) return // no reset of the ship while it's not exploding
 
     this.explosion = null
-    this.pos = new Vector(this.initialPos.x, this.initialPos.y)
+    this.pos = new Vector(x, y)
     this.vel = new Vector(0, 0)
     this.angle = 0
     this.shipAngleOffset = 0
@@ -191,10 +191,8 @@ export default class Ship {
 
     this.rays.forEach(ray => {
       let minT1 = Infinity
-      let minPx = 0
-      let minPy = 0
-      let bValid = false
-      let minAng = 0
+      let minV = null
+
       maze.edges.forEach(e => {
         // edge coordinates
         const eX = e[1].x - e[0].x
@@ -210,22 +208,37 @@ export default class Ship {
             // keep only the closest intersection from the ship
             if (t1 < minT1) {
               minT1 = t1
-              minPx = this.pos.x + ray.x * t1
-              minPy = this.pos.y + ray.y * t1
-              minAng = Math.atan2(minPy - this.pos.y, minPx - this.pos.x)
-              bValid = true
+              minV = new Vector(ray.x * t1, ray.y * t1)
             }
           }
         }
       })
-      if (bValid) this._points.push([minAng, minPx, minPy])
+      if (minV) this._points.push(minV)
     })
 
+    // filtrer le polygone pour enlever les points similaires
+    const points = []
+    const limit = 3
+    for (let i = 0; i < this._points.length - 1; i++) {
+      // return fabs(get<1>(t1) - get<1>(t2)) < 0.1f && fabs(get<2>(t1) - get<2>(t2)) < 0.1f;
+      const p1 = this._points[i]
+      const p2 = this._points[i + 1]
+      const similar = Math.abs(p1.x - p2.x) < limit && Math.abs(p1.y - p2.y) < limit
+      if (!similar) {
+        points.push(p1)
+      }
+    }
+    points.push(this._points[this._points.length - 1])
+
+    this._points = points
+
     // on trie les points par leur angle
-    this._points = this._points.sort((a, b) => {
-      if (a[0] < b[0]) return -1
-      if (a[0] === b[0]) return 0
-      return 1
+    this._points.sort((a, b) => {
+      const aAngle = a.angle // < 0 ? a.angle + Math.PI : a.angle
+      const bAngle = b.angle // < 0 ? b.angle + Math.PI : b.angle
+      if (aAngle < bAngle) return -1
+      if (aAngle > bAngle) return 1
+      return 0
     })
   }
 
@@ -241,15 +254,17 @@ export default class Ship {
     })
 
     this._points.forEach((p, index) => {
+      const x = (p.x + this.pos.x) * 0.9
+      const y = (p.y + this.pos.y) * 0.9
       ctx.fillStyle = '#FF0'
       ctx.beginPath()
-      ctx.ellipse(p[1], p[2], 10, 10, 0, 0, Math.PI * 2)
+      ctx.ellipse(x, y, 10, 10, 0, 0, Math.PI * 2)
       ctx.fill()
 
       ctx.fillStyle = '#00F'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      ctx.fillText(index, p[1], p[2])
+      ctx.fillText(index, x, y)
     })
   }
 
@@ -268,18 +283,31 @@ export default class Ship {
     // 2 - si un ray insersecte avec un mur, mettre un point
     this.calculateRaysIntersection(maze)
     // 2.1 - dessiner les rays (debug)
-    // this.drawRays(ctx)
+    this.drawRays(ctx)
 
-    // 3 - dessiner les triangles ainsi formés dans this._points
+    // 3 - dessiner le polygone ainsi formé dans this._points
     ctx.beginPath()
+    ctx.fillStyle = gradient
     ctx.fillStyle = gradient
     ctx.moveTo(this.pos.x, this.pos.y) // centre
     this._points.forEach(p => {
-      ctx.lineTo(p[1], p[2])
+      ctx.lineTo(this.pos.x + p.x, this.pos.y + p.y)
     })
     ctx.closePath()
     ctx.fill()
-    // ctx.lineTo(this.pos.x, this.pos.y)
+
+    // Avec des triangles
+    // ctx.fillStyle = '#FFF'
+    // for (let i = 0; i < this._points.length - 1; i++) {
+    //   const p1 = this._points[i]
+    //   const p2 = this._points[i + 1]
+    //   ctx.beginPath()
+    //   ctx.moveTo(this.pos.x, this.pos.y) // centre
+    //   ctx.lineTo(this.pos.x + p1.x, this.pos.y + p1.y)
+    //   ctx.lineTo(this.pos.x + p2.x, this.pos.y + p2.y)
+    //   ctx.closePath()
+    //   ctx.fill()
+    // }
 
     // dessiner les bords du beam
     ctx.beginPath()

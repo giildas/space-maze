@@ -30,7 +30,7 @@ export default class Maze {
     }
 
     // ici recuperer les edges des cellules
-    // TODO : remove doubles !!!
+    // TODO : merge edges !!! (east wall & west wall of 2 adjacent cells)
     this.edges = []
     this.grid.forEach(cell => {
       if (cell.walls.n) this._addEdge(cell, 0, 0, 1, 0)
@@ -38,6 +38,25 @@ export default class Maze {
       if (cell.walls.w) this._addEdge(cell, 0, 0, 0, 1)
       if (cell.walls.e) this._addEdge(cell, 1, 0, 1, 1)
     })
+
+    // remove doubles
+    const newEdges = this.edges.filter((edge, index) => {
+      let isUnique = true
+      this.edges.forEach((_e, _i) => {
+        if (index < _i) {
+          if (
+            edge[0].x === _e[0].x &&
+            edge[0].y === _e[0].y &&
+            edge[1].y === _e[1].y &&
+            edge[1].y === _e[1].y
+          ) {
+            isUnique = false
+          }
+        }
+      })
+      return isUnique
+    })
+    this.edges = newEdges
   }
 
   _addEdge (cell, a, b, c, d) {
@@ -144,9 +163,9 @@ export default class Maze {
   }
 
   draw (ctx) {
-    for (let i = 0; i < this.grid.length; i++) {
-      this.grid[i].draw(ctx)
-    }
+    // for (let i = 0; i < this.grid.length; i++) {
+    //   this.grid[i].draw(ctx)
+    // }
 
     // dessin des edges (debug)
     this.edges.forEach(edge => {
@@ -158,6 +177,12 @@ export default class Maze {
       ctx.fillStyle = '#00F'
       ctx.ellipse(edge[1].x, edge[1].y, 5, 5, 0, 0, Math.PI * 2)
       ctx.fill()
+
+      ctx.beginPath()
+      ctx.strokeStyle = '#0F0'
+      ctx.moveTo(edge[0].x, edge[0].y)
+      ctx.lineTo(edge[1].x, edge[1].y)
+      ctx.stroke()
     })
 
     // ctx.save()
