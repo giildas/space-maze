@@ -3,24 +3,22 @@ import Vector from './lib/Vector'
 export default class ShipFrontLight {
   constructor () {
     this.frontLightAngle = Math.PI / 6 // that is half the angle actually
-
     this.rays = []
     this.points = []
+    this.rayLength = 1000
   }
 
   makeRays (ship, maze) {
-    const length = 1000
-    const { edges } = maze
-
-    this.rays = []
+    // empty this.rays
+    const rays = []
 
     // adding a ray for left and right of light beam
-    const vStart = Vector.fromAngle(ship.angle - this.frontLightAngle, length)
-    const vEnd = Vector.fromAngle(ship.angle + this.frontLightAngle, length)
-    this.rays.push(vStart)
-    this.rays.push(vEnd)
+    const vStart = Vector.fromAngle(ship.angle - this.frontLightAngle, this.rayLength)
+    const vEnd = Vector.fromAngle(ship.angle + this.frontLightAngle, this.rayLength)
+    rays.push(vStart)
+    rays.push(vEnd)
 
-    edges.forEach(edge => {
+    maze.edges.forEach(edge => {
       for (let i = 0; i < 2; i++) {
       // créer les vecteur ray, du ship vers les extrémités de l'edge
       // si i==0 ==> vers le début
@@ -28,23 +26,25 @@ export default class ShipFrontLight {
         const vX = edge[i].x - ship.pos.x
         const vY = edge[i].y - ship.pos.y
         const v = new Vector(vX, vY)
-        v.setMag(length)
+        v.setMag(this.rayLength)
 
         const vAngle = v.angle
         if (vAngle >= ship.angle - this.frontLightAngle && vAngle <= ship.angle + this.frontLightAngle) {
-          this.rays.push(v)
+          rays.push(v)
           // creer 2 autres vecteurs juste avant et juste apres l'angle
-          const v1 = Vector.fromAngle(vAngle - 0.001, length)
-          const v2 = Vector.fromAngle(vAngle + 0.001, length)
-          this.rays.push(v1)
-          this.rays.push(v2)
+          const v1 = Vector.fromAngle(vAngle - 0.001, this.rayLength)
+          const v2 = Vector.fromAngle(vAngle + 0.001, this.rayLength)
+          rays.push(v1)
+          rays.push(v2)
         }
       }
     })
+
+    return rays
   }
 
   calculateRaysIntersection (ship, maze) {
-    this.points = []
+    let points = []
 
     this.rays.forEach(ray => {
       let minT1 = Infinity
@@ -70,32 +70,35 @@ export default class ShipFrontLight {
           }
         }
       })
-      if (minV) this.points.push(minV)
+      if (minV) points.push(minV)
     })
 
     // filter the intersection points to remove similar points
-    const points = []
+    const _points = []
     const limit = 3 // points get removed if 3px close
-    for (let i = 0; i < this.points.length - 1; i++) {
-      const p1 = this.points[i]
-      const p2 = this.points[i + 1]
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i]
+      const p2 = points[i + 1]
       const similar = Math.abs(p1.x - p2.x) < limit && Math.abs(p1.y - p2.y) < limit
       if (!similar) {
-        points.push(p1)
+        _points.push(p1)
       }
     }
-    points.push(this.points[this.points.length - 1])
+    // don't forget last point
+    _points.push(points.pop())
 
-    this.points = points
+    points = _points
 
     // on trie les points par leur angle
-    this.points.sort((a, b) => {
+    points.sort((a, b) => {
       const aAngle = a.angle // < 0 ? a.angle + Math.PI : a.angle
       const bAngle = b.angle // < 0 ? b.angle + Math.PI : b.angle
       if (aAngle < bAngle) return -1
       if (aAngle > bAngle) return 1
       return 0
     })
+
+    return points
   }
 
   drawRays (ctx, ship) {
@@ -148,9 +151,9 @@ export default class ShipFrontLight {
 
   update (ship, maze) {
     // 1 - send rays inside the front lightbeam
-    this.makeRays(ship, maze)
+    this.rays = this.makeRays(ship, maze)
     // 2 - cut rays if they intersect with a wall
-    this.calculateRaysIntersection(ship, maze)
+    this.points = this.calculateRaysIntersection(ship, maze)
   }
 
   draw (ctx, ship) {
