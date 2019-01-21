@@ -29,7 +29,11 @@ export default class ShipFrontLight {
         v.setMag(this.rayLength)
 
         const vAngle = v.angle
-        if (vAngle >= ship.angle - this.frontLightAngle && vAngle <= ship.angle + this.frontLightAngle) {
+        // TODO : error here
+        if (
+          vAngle >= ship.angle - this.frontLightAngle &&
+          vAngle <= ship.angle + this.frontLightAngle
+        ) {
           rays.push(v)
           // creer 2 autres vecteurs juste avant et juste apres l'angle
           const v1 = Vector.fromAngle(vAngle - 0.001, this.rayLength)
@@ -85,19 +89,25 @@ export default class ShipFrontLight {
       }
     }
     // don't forget last point
-    _points.push(points.pop())
+    _points.push(points[points.length - 1])
 
     points = _points
 
-    // on trie les points par leur angle
-    points.sort((a, b) => {
-      const aAngle = a.angle // < 0 ? a.angle + Math.PI : a.angle
-      const bAngle = b.angle // < 0 ? b.angle + Math.PI : b.angle
+    // sorting points by their angle, careful, ship orientation matters
+    points = points.sort(function (a, b) {
+      let aAngle = a.angle
+      let bAngle = b.angle
+
+      if (ship.angle < -Math.PI / 2 || ship.angle > Math.PI / 2) {
+        if (aAngle < 0) aAngle += 2 * Math.PI
+        if (bAngle < 0) bAngle += 2 * Math.PI
+      }
+
       if (aAngle < bAngle) return -1
       if (aAngle > bAngle) return 1
+
       return 0
     })
-
     return points
   }
 
@@ -114,17 +124,19 @@ export default class ShipFrontLight {
     })
 
     this.points.forEach((p, index) => {
-      const x = (p.x + ship.pos.x) * 0.9
-      const y = (p.y + ship.pos.y) * 0.9
+      const pos = new Vector(p.x + ship.pos.x, p.y + ship.pos.y)
+      // pos.setMag(pos.mag * 0.9)
+      // const x = (p.x + ship.pos.x) * 0.9
+      // const y = (p.y + ship.pos.y) * 0.9
       ctx.fillStyle = '#FF0'
       ctx.beginPath()
-      ctx.ellipse(x, y, 10, 10, 0, 0, Math.PI * 2)
+      ctx.ellipse(pos.x, pos.y, 10, 10, 0, 0, Math.PI * 2)
       ctx.fill()
 
       ctx.fillStyle = '#00F'
-      ctx.textAlign = 'center'
+      ctx.textAlign = 'left'
       ctx.textBaseline = 'middle'
-      ctx.fillText(index, x, y)
+      ctx.fillText(index, pos.x, pos.y)
     })
 
     // dessiner les bords du beam
@@ -157,19 +169,19 @@ export default class ShipFrontLight {
   }
 
   draw (ctx, ship) {
-    // this.drawRays(ctx, ship) // debug
+    this.drawRays(ctx, ship) // debug
 
     // 3 - draw the polygon defined in this.points
     // 3.1 - make a gradient
     const x2 = ship.pos.x + Math.cos(ship.angle) * 600
     const y2 = ship.pos.y + Math.sin(ship.angle) * 600
     const gradient = ctx.createLinearGradient(ship.pos.x, ship.pos.y, x2, y2)
+    // const gradient = ctx.createRadialGradient(ship.pos.x, ship.pos.y, 0.1, ship.pos.x, ship.pos.y, 400)
     gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)')
     gradient.addColorStop(1, 'rgba(255, 255, 255, 0.0)')
 
     // 3.2 make the polygon & fill it
     ctx.beginPath()
-    ctx.fillStyle = gradient
     ctx.fillStyle = gradient
     ctx.moveTo(ship.pos.x, ship.pos.y) // centre
     this.points.forEach(p => {
@@ -178,17 +190,17 @@ export default class ShipFrontLight {
     ctx.closePath()
     ctx.fill()
 
-  // Avec des triangles
-  // ctx.fillStyle = '#FFF'
-  // for (let i = 0; i < this.points.length - 1; i++) {
-  //   const p1 = this.points[i]
-  //   const p2 = this.points[i + 1]
-  //   ctx.beginPath()
-  //   ctx.moveTo(this.pos.x, this.pos.y) // centre
-  //   ctx.lineTo(this.pos.x + p1.x, this.pos.y + p1.y)
-  //   ctx.lineTo(this.pos.x + p2.x, this.pos.y + p2.y)
-  //   ctx.closePath()
-  //   ctx.fill()
-  // }
+    // Avec des triangles
+    // ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+    // for (let i = 0; i < this.points.length - 1; i++) {
+    //   const p1 = this.points[i]
+    //   const p2 = this.points[i + 1]
+    //   ctx.beginPath()
+    //   ctx.moveTo(ship.pos.x, ship.pos.y) // centre
+    //   ctx.lineTo(ship.pos.x + p1.x, ship.pos.y + p1.y)
+    //   ctx.lineTo(ship.pos.x + p2.x, ship.pos.y + p2.y)
+    //   ctx.closePath()
+    //   ctx.fill()
+    // }
   }
 }
