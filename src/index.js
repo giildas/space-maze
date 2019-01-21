@@ -17,11 +17,12 @@ import Ship from './Ship'
 import ShipFrontLight from './ShipFrontLight'
 import Maze from './Maze'
 import Portal from './Portal'
+import Vector from './lib/Vector'
 
 const OPTIONS = {
-  shipAngleOffset: 2.5, // speed of turning
+  shipAngleOffset: 8, // speed of turning
   shipBoostPower: 10, // the lower the harder
-  debug: false,
+  debug: true,
   wallCollision: false,
   portalCollision: false,
   lastLevel: 8 // level 3 will be the last one
@@ -38,7 +39,7 @@ const GAME_IS = {
 class Mazesteroid extends canvasGameEngine {
   setup () {
     // game state
-    this.level = 1
+    this.level = 5
     this.gameState = GAME_IS.RUNNING
     this.newLevel()
 
@@ -50,6 +51,10 @@ class Mazesteroid extends canvasGameEngine {
       if (this.gameState === GAME_IS.RUNNING) this.ship.startBoost(OPTIONS.shipBoostPower)
     }, () => this.ship.stopBoost())
     keyboard.addKeyDownAction(82, () => this.ship.resetPos()) // r
+    keyboard.addKeyDownAction(65, () => this.ship.angle += Math.PI / 4) // a
+    keyboard.addKeyDownAction(66, () => {
+      this.ship.vel = new Vector()
+    }) // a
     keyboard.addKeyDownAction(32, () => {
       // some logic
       switch (this.gameState) {
@@ -94,7 +99,8 @@ class Mazesteroid extends canvasGameEngine {
 
     // ship initialization
     // this.ship = new Ship(cellW / 2, cellH / 2, 10) // always starts at top left
-    this.ship = new Ship(this.w / 2, this.h / 2, 10) // always starts at top left
+    this.ship = new Ship(60, 130, 10) // always starts at top left
+    this.ship.angle = Math.PI
     this.shipFrontLight = new ShipFrontLight()
   }
 
@@ -118,6 +124,15 @@ class Mazesteroid extends canvasGameEngine {
     this.ctx.fillStyle = '#FFF'
     this.ctx.textAlign = 'right'
     this.ctx.fillText(text2, this.w - 15, 15)
+
+    // this.ctx.textAlign = 'left'
+    // this.ctx.fillText('Angle vaisseau : ' + this.ship.angle, 10, 30)
+    // this.shipFrontLight.points.forEach((p, index) => {
+    //   this.ctx.fillStyle = '#FFF'
+    //   this.ctx.textAlign = 'left'
+    //   const t = `${index}: orig: ${p.angle}, modif: ${p.angle < 0 ? p.angle + 2 * Math.PI : p.angle}`
+    //   this.ctx.fillText(t, 15, 40 + (index * 15))
+    // })
 
     if (this.gameState === GAME_IS.RUNNING) {
       this.ship.update(elapsedTime)

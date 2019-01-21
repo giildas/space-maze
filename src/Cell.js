@@ -37,10 +37,9 @@ export default class Cell {
     const x = this.i * this.cellW
     const y = this.j * this.cellH
 
-    ctx.strokeStyle = 'rgba(0, 255, 0, 0.2)'
-    ctx.lineWidth = 1
-
-    ctx.strokeRect(x, y, this.cellW, this.cellH)
+    // ctx.strokeStyle = 'rgba(0, 255, 0, 0.2)'
+    // ctx.lineWidth = 1
+    // ctx.strokeRect(x, y, this.cellW, this.cellH)
 
     ctx.strokeStyle = '#FFF'
     ctx.lineWidth = 2

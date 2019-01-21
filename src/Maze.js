@@ -29,6 +29,8 @@ export default class Maze {
       mazeDone = this.nextBuildStep()
     }
 
+    console.log(this.grid)
+
     // ici recuperer les edges des cellules
     // TODO : merge edges !!! (east wall & west wall of 2 adjacent cells)
     this.edges = []
@@ -163,9 +165,9 @@ export default class Maze {
   }
 
   draw (ctx) {
-    // for (let i = 0; i < this.grid.length; i++) {
-    //   this.grid[i].draw(ctx)
-    // }
+    for (let i = 0; i < this.grid.length; i++) {
+      this.grid[i].draw(ctx)
+    }
 
     // dessin des edges (debug)
     this.edges.forEach(edge => {
@@ -187,14 +189,14 @@ export default class Maze {
       ctx.stroke()
     })
 
-    // ctx.save()
-    // ctx.fillStyle = '#F00'
-    // ctx.beginPath()
-    // ctx.translate(this.furthestCellCoords.i * this.cellW, this.furthestCellCoords.j * this.cellH)
-    // ctx.ellipse(this.cellW / 2, this.cellH / 2, 10, 10, 0, 0, Math.PI * 2)
-    // ctx.fill()
-    // ctx.closePath()
-    // ctx.restore()
+    ctx.save()
+    ctx.fillStyle = '#F00'
+    ctx.beginPath()
+    ctx.translate(this.furthestCellCoords.i * this.cellW, this.furthestCellCoords.j * this.cellH)
+    ctx.ellipse(this.cellW / 2, this.cellH / 2, 10, 10, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.closePath()
+    ctx.restore()
   }
 }
 

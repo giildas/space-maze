@@ -29,7 +29,7 @@ export default class Ship {
     this.explosion = null
     this.pos = new Vector(x, y)
     this.vel = new Vector(0, 0)
-    this.angle = 0
+    this.angle = Math.PI
     this.shipAngleOffset = 0
 
     this.boost = 0
