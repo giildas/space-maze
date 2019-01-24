@@ -2,7 +2,7 @@ import Vector from './lib/Vector'
 
 export default class ShipFrontLight {
   constructor () {
-    this.frontLightAngle = Math.PI / 6 // that is half the angle actually
+    this.frontLightAngle = Math.PI / 5 // that is half the angle actually
     this.rays = []
     this.points = []
     this.rayLength = 1000
@@ -19,25 +19,27 @@ export default class ShipFrontLight {
     rays.push(vEnd)
 
     maze.edges.forEach(edge => {
+      // create some rays, from ship to start of edge & ship to end of edge
       for (let i = 0; i < 2; i++) {
-      // créer les vecteur ray, du ship vers les extrémités de l'edge
-      // si i==0 ==> vers le début
-      // si i==1 ==> vers la fin de l'edge
+        // i==0 ==> ray towards start of edge
+        // i==1 ==> ray towards end of edge
         const vX = edge[i].x - ship.pos.x
         const vY = edge[i].y - ship.pos.y
-        const v = new Vector(vX, vY)
-        v.setMag(this.rayLength)
+        const ray = new Vector(vX, vY)
 
-        const vAngle = v.angle
-        // TODO : error here
-        if (
-          vAngle >= ship.angle - this.frontLightAngle &&
-          vAngle <= ship.angle + this.frontLightAngle
-        ) {
-          rays.push(v)
-          // creer 2 autres vecteurs juste avant et juste apres l'angle
-          const v1 = Vector.fromAngle(vAngle - 0.001, this.rayLength)
-          const v2 = Vector.fromAngle(vAngle + 0.001, this.rayLength)
+        // we only add a ray if it's inside the lightbeam
+        let a = ray.angle
+        if (ship.angle < 0 && (a > Math.PI / 2)) {
+          a -= 2 * Math.PI
+        } else if (ship.angle > 0 && (a < -Math.PI / 2)) {
+          a += 2 * Math.PI
+        }
+        if (a >= ship.angle - this.frontLightAngle && a <= ship.angle + this.frontLightAngle) {
+          ray.setMag(this.rayLength)
+          rays.push(ray)
+          // create 2 other vectors just before & after this one
+          const v1 = Vector.fromAngle(ray.angle - 0.0001, this.rayLength)
+          const v2 = Vector.fromAngle(ray.angle + 0.0001, this.rayLength)
           rays.push(v1)
           rays.push(v2)
         }
@@ -108,6 +110,7 @@ export default class ShipFrontLight {
 
       return 0
     })
+
     return points
   }
 
@@ -115,33 +118,61 @@ export default class ShipFrontLight {
     const length = 1000
     ctx.lineWidth = 1
 
-    this.rays.forEach(ray => {
+    this.rays.forEach((ray, index) => {
       ctx.beginPath()
       ctx.strokeStyle = '#F00'
+
+      let a = ray.angle
+      if (ship.angle < 0) {
+        if (a > Math.PI / 2) a -= 2 * Math.PI
+      }
+      if (ship.angle > 0) {
+        if (a < -Math.PI / 2) a += 2 * Math.PI
+      }
+
+      if (a >= ship.angle - this.frontLightAngle && a <= ship.angle + this.frontLightAngle) {
+        ctx.strokeStyle = '#0F0'
+      }
+
       ctx.moveTo(ship.pos.x, ship.pos.y)
       ctx.lineTo(ship.pos.x + ray.x, ship.pos.y + ray.y)
       ctx.stroke()
-    })
 
-    this.points.forEach((p, index) => {
-      const pos = new Vector(p.x + ship.pos.x, p.y + ship.pos.y)
-      // pos.setMag(pos.mag * 0.9)
-      // const x = (p.x + ship.pos.x) * 0.9
-      // const y = (p.y + ship.pos.y) * 0.9
+      const pos = ray.clone()
+      pos.setMag(60)
+      pos.add(ship.pos)
+
       ctx.fillStyle = '#FF0'
       ctx.beginPath()
       ctx.ellipse(pos.x, pos.y, 10, 10, 0, 0, Math.PI * 2)
       ctx.fill()
 
       ctx.fillStyle = '#00F'
-      ctx.textAlign = 'left'
+      ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(index, pos.x, pos.y)
     })
 
+    this.points.forEach((p, index) => {
+      const pos = p.clone()
+      pos.setMag(pos.mag * 0.9)
+
+      const x = (pos.x + ship.pos.x)
+      const y = (pos.y + ship.pos.y)
+      ctx.fillStyle = '#000'
+      ctx.beginPath()
+      ctx.ellipse(x, y, 6, 6, 0, 0, Math.PI * 2)
+      ctx.fill()
+
+      ctx.fillStyle = '#FFF'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(index, x, y)
+    })
+
     // dessiner les bords du beam
     ctx.beginPath()
-    ctx.strokeStyle = '#FF0'
+    ctx.strokeStyle = 'rgba(255, 255, 0, 1)'
     ctx.lineWidth = 2
     ctx.moveTo(ship.pos.x, ship.pos.y) // centre
     let x = ship.pos.x + Math.cos(ship.angle - this.frontLightAngle) * length
@@ -151,7 +182,7 @@ export default class ShipFrontLight {
     ctx.stroke()
 
     ctx.beginPath()
-    ctx.strokeStyle = '#FF0'
+    ctx.strokeStyle = 'rgba(255, 255, 0, 1)'
     ctx.lineWidth = 2
     ctx.moveTo(ship.pos.x, ship.pos.y) // centre
     x = ship.pos.x + Math.cos(ship.angle + this.frontLightAngle) * length
@@ -169,8 +200,6 @@ export default class ShipFrontLight {
   }
 
   draw (ctx, ship) {
-    this.drawRays(ctx, ship) // debug
-
     // 3 - draw the polygon defined in this.points
     // 3.1 - make a gradient
     const x2 = ship.pos.x + Math.cos(ship.angle) * 600
@@ -181,26 +210,17 @@ export default class ShipFrontLight {
     gradient.addColorStop(1, 'rgba(255, 255, 255, 0.0)')
 
     // 3.2 make the polygon & fill it
-    ctx.beginPath()
-    ctx.fillStyle = gradient
-    ctx.moveTo(ship.pos.x, ship.pos.y) // centre
-    this.points.forEach(p => {
-      ctx.lineTo(ship.pos.x + p.x, ship.pos.y + p.y)
-    })
-    ctx.closePath()
-    ctx.fill()
+    if (this.points.length > 0) {
+      ctx.beginPath()
+      ctx.fillStyle = gradient
+      ctx.moveTo(ship.pos.x, ship.pos.y) // centre
+      this.points.forEach(p => {
+        ctx.lineTo(ship.pos.x + p.x, ship.pos.y + p.y)
+      })
+      ctx.closePath()
+      ctx.fill()
+    }
 
-    // Avec des triangles
-    // ctx.fillStyle = 'rgba(255, 255, 255, 1)'
-    // for (let i = 0; i < this.points.length - 1; i++) {
-    //   const p1 = this.points[i]
-    //   const p2 = this.points[i + 1]
-    //   ctx.beginPath()
-    //   ctx.moveTo(ship.pos.x, ship.pos.y) // centre
-    //   ctx.lineTo(ship.pos.x + p1.x, ship.pos.y + p1.y)
-    //   ctx.lineTo(ship.pos.x + p2.x, ship.pos.y + p2.y)
-    //   ctx.closePath()
-    //   ctx.fill()
-    // }
+    // this.drawRays(ctx, ship) // debug
   }
 }

@@ -27,24 +27,34 @@ export default class Vector {
   add (other) {
     this.x = this.x + other.x
     this.y = this.y + other.y
+    return this
   }
   subtract (other) {
     this.x = this.x - other.x
     this.y = this.y - other.y
+    return this
   }
   mult (a) {
     this.x = this.x * a
     this.y = this.y * a
+    return this
   }
+
+  normalize () {
+    var len = this.mag
+    if (len !== 0) this.mult(1 / len)
+    return this
+  }
+
   setMag (mag) {
-    const currentMag = this.mag
-    this.x = this.x * mag / currentMag
-    this.y = this.y * mag / currentMag
+    this.normalize().mult(mag)
+    return this
   }
 
   constrain (mag) {
     if (this.mag > mag) {
       this.setMag(mag)
     }
+    return this
   }
 }

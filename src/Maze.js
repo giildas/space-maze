@@ -168,7 +168,9 @@ export default class Maze {
     for (let i = 0; i < this.grid.length; i++) {
       this.grid[i].draw(ctx)
     }
+  }
 
+  _drawEdges (ctx) {
     // dessin des edges (debug)
     this.edges.forEach(edge => {
       ctx.beginPath()
@@ -188,15 +190,6 @@ export default class Maze {
       ctx.lineTo(edge[1].x, edge[1].y)
       ctx.stroke()
     })
-
-    ctx.save()
-    ctx.fillStyle = '#F00'
-    ctx.beginPath()
-    ctx.translate(this.furthestCellCoords.i * this.cellW, this.furthestCellCoords.j * this.cellH)
-    ctx.ellipse(this.cellW / 2, this.cellH / 2, 10, 10, 0, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.closePath()
-    ctx.restore()
   }
 }
 

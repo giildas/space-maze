@@ -23,8 +23,8 @@ const OPTIONS = {
   shipAngleOffset: 8, // speed of turning
   shipBoostPower: 10, // the lower the harder
   debug: true,
-  wallCollision: false,
-  portalCollision: false,
+  wallCollision: true,
+  portalCollision: true,
   lastLevel: 8 // level 3 will be the last one
 }
 
@@ -39,7 +39,7 @@ const GAME_IS = {
 class Mazesteroid extends canvasGameEngine {
   setup () {
     // game state
-    this.level = 5
+    this.level = 1
     this.gameState = GAME_IS.RUNNING
     this.newLevel()
 
@@ -98,20 +98,22 @@ class Mazesteroid extends canvasGameEngine {
     this.portal = new Portal(portalX, portalY, minCellDim / 2.5, isLastLevel)
 
     // ship initialization
-    // this.ship = new Ship(cellW / 2, cellH / 2, 10) // always starts at top left
-    this.ship = new Ship(60, 130, 10) // always starts at top left
-    this.ship.angle = Math.PI
+    this.ship = new Ship(cellW / 2, cellH / 2, 10) // always starts at top left
+    // this.ship = new Ship(this.w / 2, this.h / 2, 10) // always starts at top left
+    // this.ship.angle = 0.01
     this.shipFrontLight = new ShipFrontLight()
   }
 
   loop (elapsedTime) {
-    this.ctx.fillStyle = '#000'
+    this.ctx.fillStyle = '#222'
     this.ctx.fillRect(0, 0, this.w, this.h)
 
     this.maze.draw(this.ctx)
     this.portal.draw(this.ctx)
 
-    this.shipFrontLight.draw(this.ctx, this.ship)
+    if (!this.ship.explosion) {
+      this.shipFrontLight.draw(this.ctx, this.ship)
+    }
 
     this.ship.draw(this.ctx)
 
@@ -119,20 +121,6 @@ class Mazesteroid extends canvasGameEngine {
     this.ctx.fillStyle = '#FFF'
     this.ctx.textAlign = 'left'
     this.ctx.fillText(text, 15, 15)
-
-    const text2 = `Points: ${this.shipFrontLight.points.length} - Edges: ${this.maze.edges.length} - Rays: ${this.shipFrontLight.rays.length} - FPS : ${Math.floor(1000 / elapsedTime)}`
-    this.ctx.fillStyle = '#FFF'
-    this.ctx.textAlign = 'right'
-    this.ctx.fillText(text2, this.w - 15, 15)
-
-    // this.ctx.textAlign = 'left'
-    // this.ctx.fillText('Angle vaisseau : ' + this.ship.angle, 10, 30)
-    // this.shipFrontLight.points.forEach((p, index) => {
-    //   this.ctx.fillStyle = '#FFF'
-    //   this.ctx.textAlign = 'left'
-    //   const t = `${index}: orig: ${p.angle}, modif: ${p.angle < 0 ? p.angle + 2 * Math.PI : p.angle}`
-    //   this.ctx.fillText(t, 15, 40 + (index * 15))
-    // })
 
     if (this.gameState === GAME_IS.RUNNING) {
       this.ship.update(elapsedTime)
