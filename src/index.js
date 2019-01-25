@@ -99,9 +99,7 @@ class Mazesteroid extends canvasGameEngine {
 
     // ship initialization
     this.ship = new Ship(cellW / 2, cellH / 2, 10) // always starts at top left
-    // this.ship = new Ship(this.w / 2, this.h / 2, 10) // always starts at top left
-    // this.ship.angle = 0.01
-    this.shipFrontLight = new ShipFrontLight()
+    this.shipFrontLight = new ShipFrontLight(this.w, this.h)
   }
 
   loop (elapsedTime) {
