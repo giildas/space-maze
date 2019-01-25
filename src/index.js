@@ -108,12 +108,7 @@ class Mazesteroid extends canvasGameEngine {
 
     this.maze.draw(this.ctx)
     this.portal.draw(this.ctx)
-
-    if (!this.ship.explosion) {
-      this.shipFrontLight.draw(this.ctx, this.ship)
-    }
-
-    this.ship.draw(this.ctx)
+    this.ship.draw(this.ctx, this.shipFrontLight) // the ship is responsible for drawing his frontlight
 
     const text = `Level: ${this.level}`
     this.ctx.fillStyle = '#FFF'

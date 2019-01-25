@@ -74,6 +74,8 @@ export default class Ship {
     if (this.pos.y > h + this.r) this.pos.y = 0
     if (this.pos.x < -this.r) this.pos.x = w + this.r
     if (this.pos.y < -this.r + this.r) this.pos.y = h + this.r
+
+    return false
   }
 
   explode (cb) {
@@ -101,10 +103,11 @@ export default class Ship {
     setTimeout(cb, 500)
   }
 
-  draw (ctx) {
+  draw (ctx, frontLight) {
     if (this.explosion) {
       this.explosion.draw(ctx)
     } else {
+      frontLight.draw(ctx, this)
       this._drawShip(ctx)
       this._drawBoost(ctx)
     }

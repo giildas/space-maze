@@ -1,11 +1,17 @@
 import Vector from './lib/Vector'
 
 export default class ShipFrontLight {
-  constructor () {
-    this.frontLightAngle = Math.PI / 5 // that is half the angle actually
+  constructor (w, h) {
+    this.frontLightAngle = Math.PI / 6 // that is half the angle actually
     this.rays = []
     this.points = []
     this.rayLength = 1000
+
+    this.w = w
+    this.h = h
+
+    this.c2 = document.createElement('canvas')
+    this.ctx2 = this.c2.getContext('2d')
   }
 
   makeRays (ship, maze) {
@@ -201,25 +207,57 @@ export default class ShipFrontLight {
 
   draw (ctx, ship) {
     // 3 - draw the polygon defined in this.points
-    // 3.1 - make a gradient
-    const x2 = ship.pos.x + Math.cos(ship.angle) * 600
-    const y2 = ship.pos.y + Math.sin(ship.angle) * 600
-    const gradient = ctx.createLinearGradient(ship.pos.x, ship.pos.y, x2, y2)
-    // const gradient = ctx.createRadialGradient(ship.pos.x, ship.pos.y, 0.1, ship.pos.x, ship.pos.y, 400)
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)')
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.0)')
+    // we want 2 gradients : one from ship and fade in distance
+    // another one brighter in the center and fading on left & right
+    // we use another canvas to deal with blendingmodes and draw it on the original canvas
 
-    // 3.2 make the polygon & fill it
+    // 3.1 - make gradients
+    const xG1 = ship.pos.x + Math.cos(ship.angle) * 300
+    const yG1 = ship.pos.y + Math.sin(ship.angle) * 300
+    const gradient1 = ctx.createLinearGradient(ship.pos.x, ship.pos.y, xG1, yG1)
+    gradient1.addColorStop(0, 'rgba(255, 255, 255, .5)')
+    gradient1.addColorStop(1, 'rgba(255, 255, 255, 0.0)')
+
+    const x1 = ship.pos.x + Math.cos(ship.angle - this.frontLightAngle) * 150
+    const y1 = ship.pos.y + Math.sin(ship.angle - this.frontLightAngle) * 150
+    const x2 = ship.pos.x + Math.cos(ship.angle + this.frontLightAngle) * 150
+    const y2 = ship.pos.y + Math.sin(ship.angle + this.frontLightAngle) * 150
+    const gradient2 = ctx.createLinearGradient(x1, y1, x2, y2)
+    gradient2.addColorStop(0, 'rgba(255, 255, 255, 0)')
+    gradient2.addColorStop(0.5, 'rgba(255, 255, 255, 1)')
+    gradient2.addColorStop(1, 'rgba(255, 255, 255, 0)')
+
+    // 3.2 make 2 polygons with different gradients and multiply them using compositing mode
+    // draw on canvas2
     if (this.points.length > 0) {
-      ctx.beginPath()
-      ctx.fillStyle = gradient
-      ctx.moveTo(ship.pos.x, ship.pos.y) // centre
+      // this clears previous content & previous compositing mode
+      this.c2.width = this.w
+      this.c2.height = this.h
+
+      this.ctx2.beginPath()
+      this.ctx2.fillStyle = gradient1
+      this.ctx2.moveTo(ship.pos.x, ship.pos.y) // centre
       this.points.forEach(p => {
-        ctx.lineTo(ship.pos.x + p.x, ship.pos.y + p.y)
+        this.ctx2.lineTo(ship.pos.x + p.x, ship.pos.y + p.y)
       })
-      ctx.closePath()
-      ctx.fill()
+      this.ctx2.closePath()
+      this.ctx2.fill()
+
+      // multiply the 2 gradients
+      this.ctx2.globalCompositeOperation = 'source-in'
+
+      this.ctx2.beginPath()
+      this.ctx2.fillStyle = gradient2
+      this.ctx2.moveTo(ship.pos.x, ship.pos.y) // centre
+      this.points.forEach(p => {
+        this.ctx2.lineTo(ship.pos.x + p.x, ship.pos.y + p.y)
+      })
+      this.ctx2.closePath()
+      this.ctx2.fill()
     }
+
+    // draw canvas 2 onto original canvas
+    ctx.drawImage(this.c2, 0, 0)
 
     // this.drawRays(ctx, ship) // debug
   }
