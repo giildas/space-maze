@@ -11,7 +11,11 @@ Small maze game on canvas, in space. Find your way through the maze to reach the
 
 ### Inspiration
 
-This project has been inspired by videos from [Dan Shiffman](https://thecodingtrain.com/CodingChallenges/), and is a mashup of different videos from him : maze generation algorithm, asteroids, etc.
+This started as a small project to try different algorithms
+
+This project has been inspired by videos from [Dan Shiffman](https://thecodingtrain.com/CodingChallenges/), and is a mashup of different coding challenges from him : maze generation algorithm, asteroids, etc.
+
+For the frontlight of the ship, I was heavily inspired by code from [javidx9](https://www.youtube.com/watch?v=fc3nnG2CG8U), and the [github repo here](https://github.com/OneLoneCoder/olcPixelGameEngine/blob/master/OneLoneCoder_PGE_ShadowCasting2D.cpp) 
 
 ## Code : mini canvas framework
 
@@ -29,10 +33,6 @@ Check `src/index.js`, but the idea is to create a game class that extends from `
 * Create a `loop(elapsedTime)` method, it will be called once every frame. `elapsedTime` is the nb of ms since previous frame.
 
 This is kind of the same approach as in Processing for instance.
-
-
-
-
 
 ## Build system
 
